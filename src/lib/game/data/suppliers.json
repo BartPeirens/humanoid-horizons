@@ -1,0 +1,7 @@
+[
+	{ "id": "s1", "name": "TechNova Labs", "continent": "europe", "setupCost": 20, "bonus": "+10 Healthcare skill", "skillBoost": { "healthcare": 10 } },
+	{ "id": "s2", "name": "Pacific Robotics", "continent": "asia", "setupCost": 15, "bonus": "+10 Logistics skill", "skillBoost": { "logistics": 10 } },
+	{ "id": "s3", "name": "GreenField Automatics", "continent": "south-america", "setupCost": 12, "bonus": "+10 Agriculture skill", "skillBoost": { "agriculture": 10 } },
+	{ "id": "s4", "name": "NordicServe", "continent": "europe", "setupCost": 18, "bonus": "+10 Facility skill", "skillBoost": { "facility": 10 } },
+	{ "id": "s5", "name": "Sahara Systems", "continent": "africa", "setupCost": 10, "bonus": "+10 Retail skill", "skillBoost": { "retail": 10 } }
+]

@@ -1,0 +1,16 @@
+[
+	{ "id": "h1", "name": "CareBot X1", "type": "robot", "cost": 8, "skills": { "healthcare": 40, "logistics": 15, "facility": 20, "agriculture": 10, "retail": 15 }, "reliability": 45, "maintenanceCost": 2, "safety": 15, "image": null },
+	{ "id": "h2", "name": "LogiDroid L2", "type": "robot", "cost": 7, "skills": { "healthcare": 10, "logistics": 45, "facility": 25, "agriculture": 20, "retail": 15 }, "reliability": 42, "maintenanceCost": 2, "safety": 12, "image": null },
+	{ "id": "h3", "name": "FacilityBot F3", "type": "robot", "cost": 7, "skills": { "healthcare": 15, "logistics": 20, "facility": 40, "agriculture": 15, "retail": 20 }, "reliability": 40, "maintenanceCost": 2, "safety": 18, "image": null },
+	{ "id": "h4", "name": "AgroUnit A4", "type": "robot", "cost": 8, "skills": { "healthcare": 10, "logistics": 20, "facility": 15, "agriculture": 45, "retail": 10 }, "reliability": 38, "maintenanceCost": 2, "safety": 10, "image": null },
+	{ "id": "h5", "name": "RetailDroid R5", "type": "robot", "cost": 7, "skills": { "healthcare": 15, "logistics": 15, "facility": 20, "agriculture": 10, "retail": 42 }, "reliability": 44, "maintenanceCost": 2, "safety": 20, "image": null },
+	{ "id": "h6", "name": "OmniBot O6", "type": "robot", "cost": 10, "skills": { "healthcare": 25, "logistics": 25, "facility": 25, "agriculture": 25, "retail": 25 }, "reliability": 35, "maintenanceCost": 3, "safety": 8, "image": null },
+	{ "id": "h7", "name": "MediDrone M7", "type": "robot", "cost": 9, "skills": { "healthcare": 50, "logistics": 10, "facility": 10, "agriculture": 5, "retail": 10 }, "reliability": 48, "maintenanceCost": 2, "safety": 22, "image": null },
+	{ "id": "h8", "name": "HeavyLifter H8", "type": "robot", "cost": 8, "skills": { "healthcare": 5, "logistics": 35, "facility": 30, "agriculture": 35, "retail": 5 }, "reliability": 36, "maintenanceCost": 2, "safety": 10, "image": null },
+	{ "id": "m1", "name": "Anna (Zorgmedewerker)", "type": "human", "cost": 20, "skills": { "healthcare": 75, "logistics": 20, "facility": 25, "agriculture": 15, "retail": 35 }, "reliability": 78, "maintenanceCost": 5, "safety": 90, "image": null },
+	{ "id": "m2", "name": "Pieter (Logistiek)", "type": "human", "cost": 18, "skills": { "healthcare": 15, "logistics": 72, "facility": 40, "agriculture": 35, "retail": 25 }, "reliability": 75, "maintenanceCost": 5, "safety": 85, "image": null },
+	{ "id": "m3", "name": "Sophie (Retail)", "type": "human", "cost": 17, "skills": { "healthcare": 25, "logistics": 20, "facility": 30, "agriculture": 15, "retail": 78 }, "reliability": 80, "maintenanceCost": 5, "safety": 92, "image": null },
+	{ "id": "m4", "name": "Jan (Allrounder)", "type": "human", "cost": 22, "skills": { "healthcare": 50, "logistics": 50, "facility": 50, "agriculture": 50, "retail": 50 }, "reliability": 70, "maintenanceCost": 6, "safety": 88, "image": null },
+	{ "id": "m5", "name": "Maria (Agri-expert)", "type": "human", "cost": 18, "skills": { "healthcare": 20, "logistics": 30, "facility": 25, "agriculture": 75, "retail": 15 }, "reliability": 76, "maintenanceCost": 5, "safety": 86, "image": null },
+	{ "id": "m6", "name": "Tom (Facilitair)", "type": "human", "cost": 17, "skills": { "healthcare": 20, "logistics": 30, "facility": 73, "agriculture": 20, "retail": 25 }, "reliability": 77, "maintenanceCost": 5, "safety": 90, "image": null }
+]

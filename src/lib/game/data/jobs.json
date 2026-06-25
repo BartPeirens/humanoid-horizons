@@ -1,0 +1,47 @@
+[
+	{
+		"sector": "healthcare",
+		"jobs": [
+			{ "title": "Ziekenhuisshift", "explanation": "Ondersteun verpleegkundigen tijdens een drukke dienst. Vereist empathie en medische basiskennis." },
+			{ "title": "Thuiszorg ronde", "explanation": "Bezoek patiënten thuis voor dagelijkse zorg. Betrouwbaarheid en zelfstandigheid zijn cruciaal." },
+			{ "title": "Kliniek assistentie", "explanation": "Help artsen bij routineonderzoeken in een polikliniek. Nauwkeurigheid is belangrijk." },
+			{ "title": "Revalidatie support", "explanation": "Begeleid patiënten bij fysieke oefeningen na een operatie. Geduld en kracht vereist." }
+		]
+	},
+	{
+		"sector": "logistics",
+		"jobs": [
+			{ "title": "Magazijn sorteren", "explanation": "Sorteer en categoriseer binnenkomende pakketten in een groot distributiecentrum." },
+			{ "title": "Last-mile delivery", "explanation": "Bezorg pakketten bij klanten aan huis. Snelheid en navigatie zijn essentieel." },
+			{ "title": "Havenlading", "explanation": "Laad en los containers bij de haven. Zwaar fysiek werk met strikte veiligheidsregels." },
+			{ "title": "Distributiecentrum", "explanation": "Coördineer de goederenstroom in een regionaal distributieknooppunt." }
+		]
+	},
+	{
+		"sector": "facility",
+		"jobs": [
+			{ "title": "Kantoor onderhoud", "explanation": "Voer preventief onderhoud uit aan klimaatsystemen en verlichting in kantoorgebouwen." },
+			{ "title": "Gebouwbeheer", "explanation": "Monitor en beheer alle technische installaties van een groot gebouwencomplex." },
+			{ "title": "Schoonmaak shift", "explanation": "Professionele reiniging van bedrijfsruimtes volgens hygiëneprotocollen." },
+			{ "title": "Security ronde", "explanation": "Maak bewakingsrondes en controleer toegangssystemen. Alertheid is essentieel." }
+		]
+	},
+	{
+		"sector": "agriculture",
+		"jobs": [
+			{ "title": "Oogst assistentie", "explanation": "Help bij het binnenhalen van gewassen. Seizoensgebonden werk dat snel moet gebeuren." },
+			{ "title": "Kas monitoring", "explanation": "Monitor temperatuur, vochtigheid en groei in hightech kassen." },
+			{ "title": "Veevoer ronde", "explanation": "Bereid veevoer voor en verdeel het over de stallen. Regelmaat is belangrijk." },
+			{ "title": "Plantage inspectie", "explanation": "Inspecteer gewassen op ziektes en plagen. Vereist oog voor detail." }
+		]
+	},
+	{
+		"sector": "retail",
+		"jobs": [
+			{ "title": "Winkel stocking", "explanation": "Vul schappen bij en zorg voor een nette productpresentatie in de winkel." },
+			{ "title": "Kassa support", "explanation": "Ondersteun bij het afrekenen en help klanten met vragen. Klantvriendelijkheid is key." },
+			{ "title": "Warehouse picking", "explanation": "Verzamel online bestellingen in het magazijn. Snelheid en nauwkeurigheid tellen." },
+			{ "title": "Klantservice shift", "explanation": "Beantwoord klantvragen en los klachten op. Communicatie en geduld vereist." }
+		]
+	}
+]

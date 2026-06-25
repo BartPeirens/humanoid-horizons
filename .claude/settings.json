@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx sv *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(docker compose *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "PowerShell(docker compose build 2>&1)",
+      "PowerShell(docker compose up -d 2>&1)",
+      "PowerShell(Invoke-WebRequest -Uri http://localhost:3000 -UseBasicParsing)",
+      "Bash(npx svelte-check *)",
+      "PowerShell(Add-Type -AssemblyName System.Drawing; [System.IO.Path]::GetFullPath\\(\"doc\\\\Humanoid_Horizons_Kickstarter_Campagne_10_paginas.pdf\"\\))",
+      "PowerShell(choco list poppler 2>$null)",
+      "WebFetch(domain:localhost)",
+      "Bash(npx --yes playwright@latest --version)",
+      "Bash(npx playwright *)",
+      "Bash(node verify.mjs)",
+      "Bash(start http://localhost:5178)"
+    ]
+  }
+}
