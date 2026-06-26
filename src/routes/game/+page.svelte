@@ -8,7 +8,7 @@
 	} from '$lib/game/store';
 	import { BoardScene } from '$lib/three/BoardScene';
 	import { calculateScoreBreakdown, calculatePlayerImpactScore } from '$lib/game/engine';
-	import { CONTINENT_CONFIG, HUMANOID_CARDS, SUPPLIERS, SECTOR_TYPE_BONUS, TRAINING_MULTIPLIER, UPGRADE_MULTIPLIER, TRAINING_COST } from '$lib/game/constants';
+	import { CONTINENT_CONFIG, HUMANOID_CARDS, SUPPLIERS, SECTOR_TYPE_BONUS, TRAINING_MULTIPLIER, UPGRADE_MULTIPLIER, TRAINING_COST, BUY_ACTION_POINT_COST } from '$lib/game/constants';
 	import logo from '$lib/assets/logo.svg';
 	import type { Continent, GameAction, PlayerHumanoid, Job, Sector, ScoreBreakdown, ImpactScore, JobResult } from '$lib/game/types';
 	import Tooltip from '$lib/components/Tooltip.svelte';
@@ -100,7 +100,7 @@
 	function getBreakdown(humanoid: PlayerHumanoid, job: Job): ScoreBreakdown | null {
 		const player = $currentPlayer;
 		if (!player) return null;
-		return calculateScoreBreakdown(humanoid, job, player, false);
+		return calculateScoreBreakdown(humanoid, job, player);
 	}
 
 	function getFitLabel(score: number): { label: string; cls: string } {
@@ -869,7 +869,6 @@
 										<div class="impact-score-panel">
 											<div class="impact-header">
 												<span class="fit-badge {fit.cls}">{bd.baseScore} - {fit.label}</span>
-												<span class="dice-hint">&#x1F3B2; ±5 bij uitvoering</span>
 											</div>
 											<div class="impact-rows">
 												<div class="impact-row">
@@ -1135,9 +1134,16 @@
 								{/if}
 							</button>
 						{/each}
+						</div>
+						<div class="buy-ap-section">
+							<button class="btn-buy-ap"
+								onclick={() => doAction({ type: 'BUY_ACTION_POINT' })}
+								disabled={!player || player.cash < BUY_ACTION_POINT_COST}>
+								&#x26A1; Koop Extra Actiepunt — {BUY_ACTION_POINT_COST} cash
+							</button>
+						</div>
 					</div>
-				</div>
-			{/if}
+				{/if}
 
 			{#if showExpand}
 				<div class="shop-panel card">
@@ -1468,27 +1474,6 @@
 
 								<Tooltip position="right">
 									{#snippet children()}
-									<div class="jobresult-dice jr-hoverable" class:dice-positive={bd.diceRoll > 0} class:dice-negative={bd.diceRoll < 0} class:dice-neutral={bd.diceRoll === 0}>
-										<span class="dice-icon">&#x1F3B2;</span>
-										<span class="dice-label">
-											{#if bd.diceRoll > 0}
-												Geluk! +{bd.diceRoll}
-											{:else if bd.diceRoll < 0}
-												Pech! {bd.diceRoll}
-											{:else}
-												Neutraal
-											{/if}
-										</span>
-										<span class="dice-value">{bd.diceRoll > 0 ? '+' : ''}{bd.diceRoll}</span>
-									</div>
-									{/snippet}
-									{#snippet content()}<span class="tt-label">Dobbelsteenworp (2d6 - 7)</span>Er worden 2 dobbelstenen gegooid. Het resultaat gaat van <strong>-5</strong> (dubbel 1) tot <strong>+5</strong> (dubbel 6). Dit is puur geluk — je kunt het niet beïnvloeden. Een hogere basis score geeft meer buffer tegen pech.{/snippet}
-								</Tooltip>
-
-								<div class="jobresult-divider"></div>
-
-								<Tooltip position="right">
-									{#snippet children()}
 									<div class="jobresult-score-row jobresult-final jr-hoverable">
 										<span>Eindscore</span>
 										<span class="jobresult-final-value">{Math.round(jr.result.finalScore)}</span>
@@ -1496,7 +1481,6 @@
 									{/snippet}
 									{#snippet content()}
 										<span class="tt-label">Eindscore</span>
-										<div>Basis score ({bd.baseScore}) + dobbelsteen ({bd.diceRoll > 0 ? '+' : ''}{bd.diceRoll}) = <strong>{Math.round(jr.result.finalScore)}</strong></div>
 										<div class="tt-divider"></div>
 										<div class="tt-row"><span>70+</span><span class="tt-positive">Succes — volle beloning</span></div>
 										<div class="tt-row"><span>50-69</span><span>Gedeeltelijk — halve beloning</span></div>
@@ -2837,10 +2821,33 @@
 		margin-bottom: 0.35rem;
 	}
 
-	.dice-hint {
-		font-size: 0.62rem;
-		color: #9333ea;
+	.buy-ap-section {
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid #e2e8f0;
+	}
+
+	.btn-buy-ap {
+		width: 100%;
+		padding: 0.6rem 1rem;
+		background: linear-gradient(135deg, #7c3aed, #6d28d9);
+		color: white;
+		border: none;
+		border-radius: 0.5rem;
 		font-weight: 600;
+		font-size: 0.85rem;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.btn-buy-ap:hover:not(:disabled) {
+		background: linear-gradient(135deg, #6d28d9, #5b21b6);
+		transform: translateY(-1px);
+	}
+
+	.btn-buy-ap:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
 	.impact-rows {
@@ -3156,44 +3163,6 @@
 		height: 1px;
 		background: var(--color-border);
 		margin: 0.3rem 0;
-	}
-
-	.jobresult-dice {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.4rem 0.6rem;
-		border-radius: 6px;
-		font-size: 0.82rem;
-		font-weight: 700;
-		margin: 0.25rem 0;
-	}
-
-	.jobresult-dice.dice-positive {
-		background: #dcfce7;
-		color: #166534;
-	}
-
-	.jobresult-dice.dice-negative {
-		background: #fef2f2;
-		color: #991b1b;
-	}
-
-	.jobresult-dice.dice-neutral {
-		background: #f1f5f9;
-		color: #64748b;
-	}
-
-	.dice-icon {
-		font-size: 1.2rem;
-	}
-
-	.dice-label {
-		flex: 1;
-	}
-
-	.dice-value {
-		font-size: 0.9rem;
 	}
 
 	.jobresult-outcome {

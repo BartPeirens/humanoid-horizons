@@ -7,7 +7,7 @@ import {
 	LOSS_CASH_THRESHOLD, WIN_REPUTATION_THRESHOLD, WIN_JOBS_THRESHOLD,
 	ACTION_COSTS, CONTINENT_CONFIG, HUMANOID_CARDS, ALL_JOBS, SUPPLIERS,
 	MARKET_EVENTS, PLAYER_COLORS, PLAYER_NAMES, SECTOR_TYPE_BONUS,
-	TRAINING_MULTIPLIER, UPGRADE_MULTIPLIER, TRAINING_COST
+	TRAINING_MULTIPLIER, UPGRADE_MULTIPLIER, TRAINING_COST, BUY_ACTION_POINT_COST
 } from './constants.js';
 
 let humanoidCounter = 0;
@@ -135,6 +135,9 @@ export function processAction(state: GameState, action: GameAction): ActionResul
 			break;
 		case 'EXPAND_REGION':
 			result = handleExpandRegion(newState, player, action.continent);
+			break;
+		case 'BUY_ACTION_POINT':
+			result = handleBuyActionPoint(newState, player);
 			break;
 	}
 
@@ -307,13 +310,7 @@ function handleAssignJob(state: GameState, player: PlayerState, jobId: string, p
 	return { success: true, message: `Opdracht resultaat: ${jobResult.outcome}. ${jobResult.details}`, updatedState: state, jobResult };
 }
 
-function rollDice(): number {
-	const d1 = Math.floor(Math.random() * 6) + 1;
-	const d2 = Math.floor(Math.random() * 6) + 1;
-	return d1 + d2 - 7; // range: -5 to +5
-}
-
-export function calculateScoreBreakdown(humanoid: PlayerHumanoid, job: Job, player: PlayerState, includeDice: boolean = false): ScoreBreakdown {
+export function calculateScoreBreakdown(humanoid: PlayerHumanoid, job: Job, player: PlayerState): ScoreBreakdown {
 	const skillScore = humanoid.card.skills[job.sector];
 	const reliabilityScore = Math.round(humanoid.card.reliability * 0.3);
 	const trainingBonus = humanoid.trainingLevel * 5;
@@ -333,38 +330,44 @@ export function calculateScoreBreakdown(humanoid: PlayerHumanoid, job: Job, play
 	const typeBonusLabel = typeBonus > 0 ? sectorBonus.label : '';
 
 	const baseScore = skillScore + reliabilityScore + trainingBonus + complianceModifier + supplierBonus + typeBonus - riskPenalty - conditionPenalty;
-	const diceRoll = includeDice ? rollDice() : 0;
-	const finalScore = baseScore + diceRoll;
+	const finalScore = baseScore;
 
 	return {
 		skillScore, reliabilityScore, trainingBonus, complianceModifier,
 		supplierBonus, conditionPenalty, riskPenalty, typeBonus, typeBonusLabel,
-		diceRoll, baseScore, finalScore,
+		baseScore, finalScore,
 	};
 }
 
 function calculateJobResult(humanoid: PlayerHumanoid, job: Job, player: PlayerState): JobResult {
-	const breakdown = calculateScoreBreakdown(humanoid, job, player, true);
-	const { finalScore, diceRoll } = breakdown;
-
-	const diceLabel = diceRoll > 0 ? `Geluk +${diceRoll}` : diceRoll < 0 ? `Pech ${diceRoll}` : 'Neutraal';
+	const breakdown = calculateScoreBreakdown(humanoid, job, player);
+	const { finalScore } = breakdown;
 
 	let details: string;
 	if (finalScore >= 70) {
-		details = `Score: ${Math.round(finalScore)} (${diceLabel}). Uitstekende match!`;
+		details = `Score: ${Math.round(finalScore)}. Uitstekende match!`;
 		return { outcome: 'success', finalScore, breakdown, details };
 	} else if (finalScore >= 50) {
-		details = `Score: ${Math.round(finalScore)} (${diceLabel}). Net voldoende, maar met problemen.`;
+		details = `Score: ${Math.round(finalScore)}. Net voldoende, maar met problemen.`;
 		return { outcome: 'partial', finalScore, breakdown, details };
 	} else {
 		const reasons: string[] = [];
 		if (breakdown.skillScore < job.requiredSkill) reasons.push('te weinig skill');
 		if (breakdown.conditionPenalty > 0) reasons.push('humanoid beschadigd');
 		if (breakdown.complianceModifier < -5) reasons.push('compliance te laag');
-		if (diceRoll < -2) reasons.push('pech gehad');
-		details = `Score: ${Math.round(finalScore)} (${diceLabel}). Mislukt: ${reasons.join(', ') || 'te moeilijk'}.`;
+		details = `Score: ${Math.round(finalScore)}. Mislukt: ${reasons.join(', ') || 'te moeilijk'}.`;
 		return { outcome: 'failed', finalScore, breakdown, details };
 	}
+}
+
+function handleBuyActionPoint(state: GameState, player: PlayerState): ActionResult {
+	if (player.cash < BUY_ACTION_POINT_COST) return { success: false, message: `Niet genoeg cash (${BUY_ACTION_POINT_COST} nodig).`, updatedState: state };
+
+	player.cash -= BUY_ACTION_POINT_COST;
+	player.actionPoints += 1;
+
+	addLog(state, `${player.name} kocht een extra actiepunt voor ${BUY_ACTION_POINT_COST} cash.`, 'info');
+	return { success: true, message: `Extra actiepunt gekocht!`, updatedState: state };
 }
 
 function handleExpandRegion(state: GameState, player: PlayerState, continent: Continent): ActionResult {
@@ -438,9 +441,14 @@ function endTurn(state: GameState): ActionResult {
 			state.activeMarketEvent = null;
 		}
 
+		const bonusAP = Math.floor((state.round - 1) / 2);
 		for (const p of state.players) {
-			p.actionPoints = STARTING_ACTION_POINTS;
+			p.actionPoints = STARTING_ACTION_POINTS + bonusAP;
 			p.jobsThisRound = 0;
+		}
+
+		if (bonusAP > 0 && state.round % 2 === 1) {
+			addLog(state, `Elke speler krijgt nu ${STARTING_ACTION_POINTS + bonusAP} actiepunten per ronde!`, 'success');
 		}
 	}
 

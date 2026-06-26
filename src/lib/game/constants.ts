@@ -22,6 +22,7 @@ export const ACTION_COSTS = {
 	TRAIN_HUMANOID: { cash: 15, actionPoints: 1 },
 	ASSIGN_JOB: { actionPoints: 1 },
 	EXPAND_REGION: { cash: 25, actionPoints: 1 },
+	BUY_ACTION_POINT: { actionPoints: 0 },
 } as const;
 
 export const CONTINENT_CONFIG: Record<Continent, { name: string; baseCompliance: number; description: string }> = {
@@ -60,6 +61,8 @@ export const HUMANOID_CARDS: HumanoidCard[] = humanoidData as HumanoidCard[];
 
 export const SUPPLIERS: Supplier[] = supplierData as Supplier[];
 
+export const BUY_ACTION_POINT_COST = 15;
+
 function generateJobs(): Job[] {
 	const sectors = jobData as Array<{ sector: Sector; jobs: Array<{ title: string; explanation: string }> }>;
 	const continents: Continent[] = ['europe', 'north-america', 'south-america', 'asia', 'africa', 'oceania'];
@@ -67,18 +70,21 @@ function generateJobs(): Job[] {
 	let id = 1;
 
 	for (const { sector, jobs: sectorJobs } of sectors) {
-		for (const { title, explanation } of sectorJobs) {
+		const originalCount = 4;
+		for (let i = 0; i < sectorJobs.length; i++) {
+			const { title, explanation } = sectorJobs[i];
 			const continent = continents[id % continents.length];
+			const isNewJob = i >= originalCount;
 			jobs.push({
 				id: `j${id}`,
 				title,
 				sector,
 				continent,
-				requiredSkill: 30 + Math.floor(id * 3.7 % 40),
-				complianceLevel: Math.floor(CONTINENT_CONFIG[continent].baseCompliance * 0.8),
-				risk: 5 + (id % 15),
-				reward: 15 + Math.floor(id * 2.3 % 25),
-				reputationReward: 3 + (id % 8),
+				requiredSkill: isNewJob ? 15 + Math.floor(id * 2.3 % 25) : 30 + Math.floor(id * 3.7 % 40),
+				complianceLevel: Math.floor(CONTINENT_CONFIG[continent].baseCompliance * (isNewJob ? 0.5 : 0.8)),
+				risk: isNewJob ? 2 + (id % 8) : 5 + (id % 15),
+				reward: isNewJob ? 10 + Math.floor(id * 1.7 % 15) : 15 + Math.floor(id * 2.3 % 25),
+				reputationReward: isNewJob ? 2 + (id % 5) : 3 + (id % 8),
 				explanation,
 			});
 			id++;

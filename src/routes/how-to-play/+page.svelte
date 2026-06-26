@@ -153,10 +153,6 @@
 					<span class="score-label">Conditie-straf</span>
 					<span class="score-desc">Als conditie onder 50%: straf van (50 - conditie) x 0.3</span>
 				</div>
-				<div class="score-row dice">
-					<span class="score-label">Dobbelsteenworp</span>
-					<span class="score-desc">2d6 - 7 = een getal van -5 tot +5 (geluk/pech)</span>
-				</div>
 			</div>
 
 			<h3>Uitkomsten</h3>
@@ -531,11 +527,6 @@
 	.score-row.negative {
 		background: rgba(239, 68, 68, 0.1);
 		border-left: 3px solid #ef4444;
-	}
-
-	.score-row.dice {
-		background: rgba(245, 158, 11, 0.1);
-		border-left: 3px solid #f59e0b;
 	}
 
 	.outcome-grid {

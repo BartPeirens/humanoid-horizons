@@ -39,7 +39,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
 	{
 		id: 'humanoid-bought',
 		title: 'Goed gedaan!',
-		message: 'Je hebt je eerste humanoid! Rechts zie je de kaart met skills per sector (zorg, logistiek, etc.). Bij opdrachten telt de skill-match mee, plus betrouwbaarheid, training, compliance en een dobbelsteen (-5 tot +5).',
+		message: 'Je hebt je eerste humanoid! Rechts zie je de kaart met skills per sector (zorg, logistiek, etc.). Bij opdrachten telt de skill-match mee, plus betrouwbaarheid, training en compliance.',
 		position: 'bottom-right',
 		highlight: 'humanoids',
 	},
@@ -62,7 +62,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
 	{
 		id: 'assign-job',
 		title: 'Stap 4: Voer de opdracht uit',
-		message: 'Klik op "Voer Opdracht Uit". De score bepaalt het resultaat: 70+ = succes (volle beloning), 50-69 = gedeeltelijk (halve beloning), onder 50 = mislukt (-10 cash, -5 reputatie). Een dobbelsteen voegt -5 tot +5 toe — soms heb je geluk!',
+		message: 'Klik op "Voer Opdracht Uit". De score bepaalt het resultaat: 70+ = succes (volle beloning), 50-69 = gedeeltelijk (halve beloning), onder 50 = mislukt (-10 cash, -5 reputatie).',
 		position: 'bottom',
 		highlight: 'actions',
 		action: 'ASSIGN_JOB',

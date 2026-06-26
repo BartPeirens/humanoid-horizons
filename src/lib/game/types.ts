@@ -121,6 +121,7 @@ export type GameAction =
 	| { type: 'TRAIN_HUMANOID'; playerHumanoidId: string; sector: Sector }
 	| { type: 'ASSIGN_JOB'; activeJobId: string; playerHumanoidId: string }
 	| { type: 'EXPAND_REGION'; continent: Continent }
+	| { type: 'BUY_ACTION_POINT' }
 	| { type: 'END_TURN' };
 
 export interface ActionResult {
@@ -140,7 +141,6 @@ export interface ScoreBreakdown {
 	riskPenalty: number;
 	typeBonus: number;
 	typeBonusLabel: string;
-	diceRoll: number;
 	baseScore: number;
 	finalScore: number;
 }

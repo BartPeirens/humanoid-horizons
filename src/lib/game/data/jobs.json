@@ -5,7 +5,11 @@
 			{ "title": "Ziekenhuisshift", "explanation": "Ondersteun verpleegkundigen tijdens een drukke dienst. Vereist empathie en medische basiskennis." },
 			{ "title": "Thuiszorg ronde", "explanation": "Bezoek patiënten thuis voor dagelijkse zorg. Betrouwbaarheid en zelfstandigheid zijn cruciaal." },
 			{ "title": "Kliniek assistentie", "explanation": "Help artsen bij routineonderzoeken in een polikliniek. Nauwkeurigheid is belangrijk." },
-			{ "title": "Revalidatie support", "explanation": "Begeleid patiënten bij fysieke oefeningen na een operatie. Geduld en kracht vereist." }
+			{ "title": "Revalidatie support", "explanation": "Begeleid patiënten bij fysieke oefeningen na een operatie. Geduld en kracht vereist." },
+			{ "title": "Bloeddruk meting", "explanation": "Meet bloeddruk bij patiënten in de wachtkamer. Eenvoudige maar belangrijke taak." },
+			{ "title": "Medicijnbezorging", "explanation": "Breng medicijnen naar patiënten op de afdeling. Betrouwbaarheid is voldoende." },
+			{ "title": "Bed opmaken dienst", "explanation": "Maak ziekenhuisbedden op en vervang linnengoed. Basiswerk dat snel kan." },
+			{ "title": "Ontvangstbalie hulp", "explanation": "Help patiënten bij de ontvangstbalie met inschrijving. Vriendelijkheid is key." }
 		]
 	},
 	{
@@ -14,7 +18,11 @@
 			{ "title": "Magazijn sorteren", "explanation": "Sorteer en categoriseer binnenkomende pakketten in een groot distributiecentrum." },
 			{ "title": "Last-mile delivery", "explanation": "Bezorg pakketten bij klanten aan huis. Snelheid en navigatie zijn essentieel." },
 			{ "title": "Havenlading", "explanation": "Laad en los containers bij de haven. Zwaar fysiek werk met strikte veiligheidsregels." },
-			{ "title": "Distributiecentrum", "explanation": "Coördineer de goederenstroom in een regionaal distributieknooppunt." }
+			{ "title": "Distributiecentrum", "explanation": "Coördineer de goederenstroom in een regionaal distributieknooppunt." },
+			{ "title": "Pakket scannen", "explanation": "Scan barcodes en sorteer pakketten op bestemming. Simpel maar snel werk." },
+			{ "title": "Voorraad telling", "explanation": "Tel de voorraad in het magazijn en noteer de aantallen. Nauwkeurigheid vereist." },
+			{ "title": "Pallets stapelen", "explanation": "Stapel pallets in het magazijn. Fysieke kracht maar geen speciale skills nodig." },
+			{ "title": "Bezorgroute rijden", "explanation": "Rijd een vaste bezorgroute met kleine pakketten. Betrouwbaarheid is voldoende." }
 		]
 	},
 	{
@@ -23,7 +31,11 @@
 			{ "title": "Kantoor onderhoud", "explanation": "Voer preventief onderhoud uit aan klimaatsystemen en verlichting in kantoorgebouwen." },
 			{ "title": "Gebouwbeheer", "explanation": "Monitor en beheer alle technische installaties van een groot gebouwencomplex." },
 			{ "title": "Schoonmaak shift", "explanation": "Professionele reiniging van bedrijfsruimtes volgens hygiëneprotocollen." },
-			{ "title": "Security ronde", "explanation": "Maak bewakingsrondes en controleer toegangssystemen. Alertheid is essentieel." }
+			{ "title": "Security ronde", "explanation": "Maak bewakingsrondes en controleer toegangssystemen. Alertheid is essentieel." },
+			{ "title": "Vuilnis ophalen", "explanation": "Haal afval op uit kantoren en breng het naar de containers. Eenvoudig werk." },
+			{ "title": "Lampen vervangen", "explanation": "Vervang kapotte lampen in het gebouw. Basiskennis is voldoende." },
+			{ "title": "Receptie bemanning", "explanation": "Bewaak de receptie en verwelkom bezoekers. Vriendelijkheid gewenst." },
+			{ "title": "Parkeerterrein toezicht", "explanation": "Houd toezicht op het parkeerterrein en help bezoekers. Laagdrempelig werk." }
 		]
 	},
 	{
@@ -32,7 +44,11 @@
 			{ "title": "Oogst assistentie", "explanation": "Help bij het binnenhalen van gewassen. Seizoensgebonden werk dat snel moet gebeuren." },
 			{ "title": "Kas monitoring", "explanation": "Monitor temperatuur, vochtigheid en groei in hightech kassen." },
 			{ "title": "Veevoer ronde", "explanation": "Bereid veevoer voor en verdeel het over de stallen. Regelmaat is belangrijk." },
-			{ "title": "Plantage inspectie", "explanation": "Inspecteer gewassen op ziektes en plagen. Vereist oog voor detail." }
+			{ "title": "Plantage inspectie", "explanation": "Inspecteer gewassen op ziektes en plagen. Vereist oog voor detail." },
+			{ "title": "Zaaiwerk", "explanation": "Plant zaden in voorbereide bedden. Eenvoudig seizoenswerk." },
+			{ "title": "Fruit plukken", "explanation": "Pluk rijp fruit van bomen in de boomgaard. Fysiek maar simpel werk." },
+			{ "title": "Stallen uitmesten", "explanation": "Maak stallen schoon en leg vers stro neer. Basiswerk op de boerderij." },
+			{ "title": "Water geven", "explanation": "Geef planten water volgens het irrigatieschema. Routinematig werk." }
 		]
 	},
 	{
@@ -41,7 +57,11 @@
 			{ "title": "Winkel stocking", "explanation": "Vul schappen bij en zorg voor een nette productpresentatie in de winkel." },
 			{ "title": "Kassa support", "explanation": "Ondersteun bij het afrekenen en help klanten met vragen. Klantvriendelijkheid is key." },
 			{ "title": "Warehouse picking", "explanation": "Verzamel online bestellingen in het magazijn. Snelheid en nauwkeurigheid tellen." },
-			{ "title": "Klantservice shift", "explanation": "Beantwoord klantvragen en los klachten op. Communicatie en geduld vereist." }
+			{ "title": "Klantservice shift", "explanation": "Beantwoord klantvragen en los klachten op. Communicatie en geduld vereist." },
+			{ "title": "Prijskaartjes plakken", "explanation": "Plak prijskaartjes op producten in de winkel. Simpel maar nodig werk." },
+			{ "title": "Winkelwagens ophalen", "explanation": "Verzamel winkelwagens van het parkeerterrein. Geen speciale skills nodig." },
+			{ "title": "Etalage opruimen", "explanation": "Ruim de etalage op en maak het netjes. Basiswerk in de winkel." },
+			{ "title": "Tasjes inpakken", "explanation": "Help klanten bij het inpakken van boodschappen. Klantvriendelijkheid gewenst." }
 		]
 	}
 ]
