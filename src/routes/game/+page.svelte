@@ -160,7 +160,7 @@
 
 		boardScene.onJobPlace = (jobId, humanoidId) => {
 			const h = $currentPlayer?.humanoids.find(h => h.id === humanoidId);
-			if (!h || h.trainingTurnsLeft > 0) return;
+			if (!h || h.trainingTurnsLeft > 0 || ($currentPlayer?.actionPoints ?? 0) < 1) return;
 
 			const next = new Map(pendingAssignments);
 			for (const [jId, hId] of next) {
@@ -400,6 +400,25 @@
 
 	function getTutorialPositionClass(position: string): string {
 		return `tutorial-${position}`;
+	}
+
+	function calcCashSpentOnActions(cur: import('$lib/game/types').PlayerState, nxt: import('$lib/game/types').PlayerState): number {
+		let spent = 0;
+		const newHumanoids = nxt.humanoids.filter(h => !cur.humanoids.some(ch => ch.id === h.id));
+		spent += newHumanoids.reduce((s, h) => s + h.card.cost, 0);
+		const newSuppliers = nxt.suppliers.filter(s => !cur.suppliers.some(cs => cs.id === s.id));
+		spent += newSuppliers.reduce((s, sup) => s + (SUPPLIERS.find(x => x.id === sup.id)?.setupCost ?? 0), 0);
+		for (const [id, c] of Object.entries(nxt.continents)) {
+			if (c.unlocked && !cur.continents[id as Continent]?.unlocked) spent += 25;
+		}
+		for (const h of nxt.humanoids) {
+			const prev = cur.humanoids.find(ch => ch.id === h.id);
+			if (h.trainingTurnsLeft > 0 && (!prev || prev.trainingTurnsLeft === 0)) {
+				spent += TRAINING_COST[h.card.type];
+			}
+		}
+		spent += (nxt.upgradesCompleted - cur.upgradesCompleted) * 20;
+		return spent;
 	}
 
 	// Drag and drop handlers
@@ -778,10 +797,10 @@
 								class:selected={isSelected}
 								class:dragging={isDragging}
 								class:in-training={isTraining}
-								draggable={!isTraining}
+								draggable={!isTraining && player.actionPoints >= 1}
 								role="button"
 								tabindex="0"
-								ondragstart={(e: DragEvent) => { if (isTraining) { e.preventDefault(); return; } onDragStartHumanoid(e, h.id); }}
+								ondragstart={(e: DragEvent) => { if (isTraining || player.actionPoints < 1) { e.preventDefault(); return; } onDragStartHumanoid(e, h.id); }}
 								ondragend={onDragEndHumanoid}
 								onclick={() => {
 									selectedHumanoidId = isSelected ? null : h.id;
@@ -798,6 +817,8 @@
 									<div class="h-name">{humanoidIcon(h.card)} {h.card.name}</div>
 									{#if h.trainingTurnsLeft > 0}
 										<span class="training-badge">&#x1F393; Training</span>
+									{:else if player.actionPoints < 1}
+										<span class="drag-handle disabled" title="Geen actiepunten over">&#x2630;</span>
 									{:else}
 										<span class="drag-handle" title="Sleep naar een opdracht">&#x2630;</span>
 									{/if}
@@ -956,7 +977,8 @@
 						&#x1F30D; Uitbreiden (25)
 					</button>
 					{#if pendingAssignments.size > 0}
-						<button class="btn-success" onclick={confirmPendingAssignments}>
+						<button class="btn-success" onclick={confirmPendingAssignments}
+							disabled={player.actionPoints < 1}>
 							&#x2705; Bevestig Opdrachten ({pendingAssignments.size})
 						</button>
 						<button class="btn-outline btn-sm" onclick={cancelAllPendingAssignments}>
@@ -1534,8 +1556,9 @@
 		{@const curImp = endTurnStartImpact}
 		{@const nxtImp = endTurnPreviewImpact}
 		{@const maintenanceCost = nxt.humanoids.reduce((s, h) => s + h.card.maintenanceCost, 0)}
-		{@const cashFromJobs = (nxt.cash - cur.cash) + maintenanceCost}
 		{@const newHumanoids = nxt.humanoids.filter(h => !cur.humanoids.some(ch => ch.id === h.id))}
+		{@const cashSpentOnActions = calcCashSpentOnActions(cur, nxt)}
+		{@const cashFromJobs = (nxt.cash - cur.cash) + maintenanceCost + cashSpentOnActions}
 		{@const jobsDone = nxt.successfulJobs - cur.successfulJobs}
 		{@const partialJobs = nxt.jobsScored - cur.jobsScored - (nxt.successfulJobs - cur.successfulJobs) - (nxt.failedJobs - cur.failedJobs)}
 		{@const failedJobsDone = nxt.failedJobs - cur.failedJobs}
@@ -1570,6 +1593,12 @@
 							<span class="endturn-pos">+{cashFromJobs} uit opdrachten</span>
 						{:else if cashFromJobs < 0}
 							<span class="endturn-neg">{cashFromJobs} uit mislukte opdrachten</span>
+						{/if}
+						{#if cashSpentOnActions > 0}
+							<span class="endturn-neg">-{cashSpentOnActions} aankopen</span>
+							<span class="endturn-explain-sub">
+								({#each newHumanoids as h, i}{#if i > 0}, {/if}{h.card.name} -{h.card.cost}{/each}{#each nxt.suppliers.filter(s => !cur.suppliers.some(cs => cs.id === s.id)) as sup, i}{#if i > 0 || newHumanoids.length > 0}, {/if}{sup.name}{/each})
+							</span>
 						{/if}
 						{#if maintenanceCost > 0}
 							<span class="endturn-neg">-{maintenanceCost} onderhoud</span>
@@ -2157,6 +2186,11 @@
 		font-size: 0.85rem;
 		opacity: 0.35;
 		cursor: grab;
+	}
+
+	.drag-handle.disabled {
+		opacity: 0.15;
+		cursor: not-allowed;
 	}
 
 	.h-stats {
