@@ -33,6 +33,11 @@ jobs:
       - name: Build
         run: npm run build:ghpages
 
+      - name: Fix base path for GitHub Pages
+        run: |
+          # Replace dynamic base calculation with hardcoded base path in all HTML files
+          find build -name '*.html' -exec sed -i 's|base: new URL("\.\.*", location)\.pathname\.slice(0, -1)|base: "/humanoid-horizons"|g' {} +
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
