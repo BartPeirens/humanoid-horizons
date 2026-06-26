@@ -12,12 +12,12 @@ FROM node:22-slim AS runner
 
 WORKDIR /app
 
+RUN npm install -g sirv-cli
+
 COPY --from=builder /app/build ./build
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
 
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["node", "build"]
+CMD ["sirv", "build", "--host", "0.0.0.0", "--port", "3000", "--single"]

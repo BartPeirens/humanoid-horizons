@@ -127,6 +127,7 @@ export interface ActionResult {
 	success: boolean;
 	message: string;
 	updatedState: GameState;
+	jobResult?: JobResult;
 }
 
 export interface ScoreBreakdown {

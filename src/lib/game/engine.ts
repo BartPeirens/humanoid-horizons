@@ -304,7 +304,7 @@ function handleAssignJob(state: GameState, player: PlayerState, jobId: string, p
 
 	checkLossConditions(state, player);
 
-	return { success: true, message: `Opdracht resultaat: ${jobResult.outcome}. ${jobResult.details}`, updatedState: state };
+	return { success: true, message: `Opdracht resultaat: ${jobResult.outcome}. ${jobResult.details}`, updatedState: state, jobResult };
 }
 
 function rollDice(): number {

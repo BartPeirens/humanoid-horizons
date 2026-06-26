@@ -16,7 +16,9 @@
       "Bash(npx --yes playwright@latest --version)",
       "Bash(npx playwright *)",
       "Bash(node verify.mjs)",
-      "Bash(start http://localhost:5178)"
+      "Bash(start http://localhost:5178)",
+      "WebFetch(domain:docs.github.com)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object OwningProcess | ForEach-Object { Get-Process -Id $_.OwningProcess } | Select-Object Id, ProcessName)"
     ]
   }
 }

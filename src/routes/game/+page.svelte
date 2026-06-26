@@ -2,14 +2,14 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import {
-		gameState, currentPlayer, isGameActive, performAction, lastMessage, resetGame,
+		gameState, currentPlayer, isGameActive, performAction, previewAction, lastMessage, resetGame,
 		tutorialActive, currentTutorialStep, advanceTutorial, skipTutorial, completeTutorial
 	} from '$lib/game/store';
 	import { BoardScene } from '$lib/three/BoardScene';
 	import { calculateScoreBreakdown, calculatePlayerImpactScore } from '$lib/game/engine';
 	import { CONTINENT_CONFIG, HUMANOID_CARDS, SUPPLIERS, SECTOR_TYPE_BONUS, TRAINING_MULTIPLIER, UPGRADE_MULTIPLIER, TRAINING_COST } from '$lib/game/constants';
 	import logo from '$lib/assets/logo.svg';
-	import type { Continent, GameAction, PlayerHumanoid, Job, Sector, ScoreBreakdown, ImpactScore } from '$lib/game/types';
+	import type { Continent, GameAction, PlayerHumanoid, Job, Sector, ScoreBreakdown, ImpactScore, JobResult } from '$lib/game/types';
 	import Tooltip from '$lib/components/Tooltip.svelte';
 
 	let boardContainer: HTMLElement;
@@ -28,6 +28,29 @@
 	let pendingAssignments = $state<Map<string, string>>(new Map());
 	let collapsedPlayerIds = $state<Set<number>>(new Set());
 	let zoomLevel = $state(5);
+	let showEndTurnPopup = $state(false);
+	let endTurnStartState = $state<import('$lib/game/types').PlayerState | null>(null);
+	let endTurnStartImpact = $state<import('$lib/game/types').ImpactScore | null>(null);
+	let endTurnPreviewState = $state<import('$lib/game/types').PlayerState | null>(null);
+	let endTurnPreviewImpact = $state<import('$lib/game/types').ImpactScore | null>(null);
+	let showPodiumPopup = $state(false);
+	let turnStartSnapshot = $state<import('$lib/game/types').PlayerState | null>(null);
+	let lastSnapshotKey = $state('');
+
+	interface JobResultDisplay {
+		jobTitle: string;
+		jobSector: Sector;
+		jobReward: number;
+		jobRepReward: number;
+		humanoidName: string;
+		humanoidType: string;
+		result: JobResult;
+		actionSuccess: boolean;
+		errorMessage?: string;
+	}
+	let showJobResultPopup = $state(false);
+	let jobResultsDisplay = $state<JobResultDisplay[]>([]);
+	let pendingEndTurnAfterResults = $state(false);
 
 	function togglePlayerExpand(playerId: number) {
 		const next = new Set(collapsedPlayerIds);
@@ -152,6 +175,16 @@
 	});
 
 	$effect(() => {
+		if ($gameState && $currentPlayer) {
+			const key = `${$gameState.round}-${$gameState.currentPlayerIndex}`;
+			if (key !== lastSnapshotKey) {
+				lastSnapshotKey = key;
+				turnStartSnapshot = $state.snapshot($currentPlayer) as import('$lib/game/types').PlayerState;
+			}
+		}
+	});
+
+	$effect(() => {
 		if ($gameState && boardScene) {
 			boardScene.updateGameState($gameState);
 			for (const [jobId, humanoidId] of pendingAssignments) {
@@ -198,6 +231,121 @@
 		}
 	}
 
+	function processAndShowJobResults(afterCallback?: () => void) {
+		if (!$gameState || !$currentPlayer || pendingAssignments.size === 0) {
+			afterCallback?.();
+			return;
+		}
+
+		const results: JobResultDisplay[] = [];
+		const jobInfos = new Map<string, { job: Job; humanoidName: string; humanoidType: string }>();
+		for (const [jobId, humanoidId] of pendingAssignments) {
+			const job = $gameState.availableJobs.find(j => j.id === jobId);
+			const humanoid = $currentPlayer.humanoids.find(h => h.id === humanoidId);
+			if (job && humanoid) {
+				jobInfos.set(jobId, { job, humanoidName: humanoid.card.name, humanoidType: humanoid.card.type });
+			}
+		}
+
+		for (const [jobId, humanoidId] of pendingAssignments) {
+			const info = jobInfos.get(jobId);
+			if (!info) continue;
+
+			const actionResult = performAction({ type: 'ASSIGN_JOB', activeJobId: jobId, playerHumanoidId: humanoidId });
+
+			if (actionResult?.success && actionResult.jobResult) {
+				results.push({
+					jobTitle: info.job.title,
+					jobSector: info.job.sector,
+					jobReward: info.job.reward,
+					jobRepReward: info.job.reputationReward,
+					humanoidName: info.humanoidName,
+					humanoidType: info.humanoidType,
+					result: actionResult.jobResult,
+					actionSuccess: true,
+				});
+			} else if (actionResult) {
+				results.push({
+					jobTitle: info.job.title,
+					jobSector: info.job.sector,
+					jobReward: info.job.reward,
+					jobRepReward: info.job.reputationReward,
+					humanoidName: info.humanoidName,
+					humanoidType: info.humanoidType,
+					result: { outcome: 'failed', finalScore: 0, breakdown: {} as ScoreBreakdown, details: '' },
+					actionSuccess: false,
+					errorMessage: actionResult.message,
+				});
+			}
+		}
+
+		pendingAssignments = new Map();
+		boardScene?.clearAllPlacedCylinders();
+		selectedJobId = null;
+		selectedHumanoidId = null;
+
+		if (results.length > 0) {
+			jobResultsDisplay = results;
+			showJobResultPopup = true;
+			if (afterCallback) {
+				pendingEndTurnAfterResults = true;
+			}
+		} else {
+			afterCallback?.();
+		}
+	}
+
+	function dismissJobResults() {
+		showJobResultPopup = false;
+		jobResultsDisplay = [];
+		if (pendingEndTurnAfterResults) {
+			pendingEndTurnAfterResults = false;
+			showEndTurnFlow();
+		}
+	}
+
+	function showEndTurnFlow() {
+		if (!$gameState || !$currentPlayer || !turnStartSnapshot) return;
+
+		endTurnStartState = $state.snapshot(turnStartSnapshot) as import('$lib/game/types').PlayerState;
+		endTurnStartImpact = calculatePlayerImpactScore(turnStartSnapshot, $gameState.round);
+
+		const preview = previewAction({ type: 'END_TURN' });
+		if (preview && preview.success) {
+			const previewPlayer = preview.updatedState.players[$currentPlayer.id];
+			endTurnPreviewState = previewPlayer;
+			const round = Math.min(preview.updatedState.round, $gameState.maxRounds);
+			endTurnPreviewImpact = calculatePlayerImpactScore(previewPlayer, round);
+		}
+		showEndTurnPopup = true;
+	}
+
+	function handleEndTurnClick() {
+		if (!$gameState || !$currentPlayer || !turnStartSnapshot) return;
+		closeAllPanels();
+
+		if (pendingAssignments.size > 0) {
+			processAndShowJobResults(() => showEndTurnFlow());
+		} else {
+			showEndTurnFlow();
+		}
+	}
+
+	function confirmEndTurn() {
+		showEndTurnPopup = false;
+		doAction({ type: 'END_TURN' });
+
+		if ($gameState && ($gameState.status === 'won' || $gameState.status === 'lost')) {
+			showPodiumPopup = true;
+		}
+	}
+
+	function cancelEndTurn() {
+		showEndTurnPopup = false;
+		endTurnPreviewState = null;
+		endTurnStartState = null;
+	}
+
 	function doAction(action: GameAction) {
 		performAction(action);
 
@@ -214,12 +362,7 @@
 	}
 
 	function confirmPendingAssignments() {
-		for (const [jobId, humanoidId] of pendingAssignments) {
-			performAction({ type: 'ASSIGN_JOB', activeJobId: jobId, playerHumanoidId: humanoidId });
-		}
-		pendingAssignments = new Map();
-		selectedJobId = null;
-		selectedHumanoidId = null;
+		processAndShowJobResults();
 	}
 
 	function cancelPendingAssignment(jobId: string) {
@@ -819,7 +962,7 @@
 							&#x274C; Annuleer
 						</button>
 					{/if}
-					<button class="btn-danger" onclick={() => doAction({ type: 'END_TURN' })}>
+					<button class="btn-danger" onclick={handleEndTurnClick}>
 						&#x23ED;&#xFE0F; Beurt beëindigen
 					</button>
 				{:else}
@@ -836,32 +979,83 @@
 					<h3>&#x1F6D2; Resource Shop</h3>
 					<div class="shop-grid">
 						{#each state.availableHumanoids as card}
+							{@const trainGain = Math.round(8 * TRAINING_MULTIPLIER[card.type])}
+							{@const upgradeGain = Math.round(10 * UPGRADE_MULTIPLIER[card.type])}
+							{@const trainCost = TRAINING_COST[card.type]}
+							{@const sectorAdvantages = Object.entries(SECTOR_TYPE_BONUS).filter(([, v]) => v.preferred === card.type).map(([s]) => SECTOR_LABELS[s as Sector])}
 							<button class="shop-item"
 								onclick={() => doAction({ type: 'BUY_HUMANOID', humanoidCardId: card.id })}
 								disabled={player && player.cash < card.cost}>
 								<div class="shop-name">{humanoidIcon(card)} {card.name}</div>
 								<div class="shop-type badge {card.type === 'human' ? 'badge-warning' : 'badge-info'}">{card.type === 'human' ? 'Mens' : 'Robot'}</div>
 								<div class="shop-costs">
-									<span class="shop-cost">&#x1F4B0; {card.cost} aanschaf</span>
-									<span class="shop-maintenance">&#x1F4B8; {card.maintenanceCost}/ronde</span>
+									<Tooltip position="top">
+										{#snippet children()}<span class="shop-cost">&#x1F4B0; {card.cost} aanschaf</span>{/snippet}
+										{#snippet content()}<span class="tt-label">Aanschafprijs</span>Wordt direct van je cash afgetrokken bij aankoop{/snippet}
+									</Tooltip>
+									<Tooltip position="top">
+										{#snippet children()}<span class="shop-maintenance">&#x1F4B8; {card.maintenanceCost}/ronde</span>{/snippet}
+										{#snippet content()}<span class="tt-label">Onderhoud per ronde</span>Wordt <strong>elke beurt</strong> automatisch afgetrokken bij "Beurt beëindigen". Hoe meer resources, hoe hoger je vaste kosten{/snippet}
+									</Tooltip>
 								</div>
-								<div class="shop-reliability">&#x1F527; Betrouwbaarheid: {card.reliability}%</div>
+								<Tooltip position="top">
+									{#snippet children()}<div class="shop-reliability">&#x1F527; Betrouwbaarheid: {card.reliability}%</div>{/snippet}
+									{#snippet content()}<span class="tt-label">Betrouwbaarheid</span>30% hiervan wordt als bonus bij je opdrachtscore opgeteld. <strong>{card.reliability}%</strong> → <strong class="tt-positive">+{Math.round(card.reliability * 0.3)}</strong> op elke opdracht{/snippet}
+								</Tooltip>
 								<div class="shop-type-traits">
 									{#if card.type === 'human'}
-										<span class="trait-badge trait-human" title="Hoge skills, direct inzetbaar, maar groeit nauwelijks door training">&#x2B50; Direct sterk — training +{Math.round(8 * TRAINING_MULTIPLIER.human)}/keer</span>
+										<Tooltip position="top">
+											{#snippet children()}<span class="trait-badge trait-human">&#x2B50; Direct sterk — training +{trainGain}/keer</span>{/snippet}
+											{#snippet content()}
+												<span class="tt-label">Mens — eigenschappen</span>
+												<div class="tt-row"><span>Training skill-groei</span><span class="tt-value">+{trainGain} per keer</span></div>
+												<div class="tt-row"><span>Trainingskost</span><span class="tt-value">{trainCost} cash</span></div>
+												<div class="tt-row"><span>Upgrade skill-groei</span><span class="tt-value">+{upgradeGain} per keer</span></div>
+												<div class="tt-row"><span>Veiligheid</span><span class="tt-positive">Hoog (vast)</span></div>
+												<div class="tt-divider"></div>
+												<div>Sector-voordeel in: <strong>{sectorAdvantages.join(', ')}</strong></div>
+											{/snippet}
+										</Tooltip>
 									{:else}
-										<span class="trait-badge trait-robot" title="Lage skills bij start, maar groeit snel door training">&#x1F680; Groeit snel — training +{Math.round(8 * TRAINING_MULTIPLIER.robot)}/keer</span>
+										<Tooltip position="top">
+											{#snippet children()}<span class="trait-badge trait-robot">&#x1F680; Groeit snel — training +{trainGain}/keer</span>{/snippet}
+											{#snippet content()}
+												<span class="tt-label">Robot — eigenschappen</span>
+												<div class="tt-row"><span>Training skill-groei</span><span class="tt-value">+{trainGain} per keer</span></div>
+												<div class="tt-row"><span>Trainingskost</span><span class="tt-value">{trainCost} cash</span></div>
+												<div class="tt-row"><span>Upgrade skill-groei</span><span class="tt-value">+{upgradeGain} per keer</span></div>
+												<div class="tt-row"><span>Veiligheid</span><span class="tt-negative">Laag (groeit +15 per training)</span></div>
+												<div class="tt-divider"></div>
+												<div>Sector-voordeel in: <strong>{sectorAdvantages.join(', ')}</strong></div>
+											{/snippet}
+										</Tooltip>
 									{/if}
 								</div>
 								<div class="shop-skills-bars">
 									{#each Object.entries(card.skills) as [sector, level]}
-										<div class="shop-skill-bar">
-											<span class="shop-skill-label">{SECTOR_LABELS[sector as Sector]}</span>
-											<div class="skill-track">
-												<div class="skill-fill" style="width: {level}%"></div>
+										{@const s = sector as Sector}
+										{@const bonus = SECTOR_TYPE_BONUS[s]}
+										{@const hasBonus = bonus.preferred === card.type}
+										<Tooltip position="right">
+											{#snippet children()}
+											<div class="shop-skill-bar">
+												<span class="shop-skill-label" class:shop-skill-bonus={hasBonus}>{SECTOR_LABELS[s]}</span>
+												<div class="skill-track">
+													<div class="skill-fill" class:skill-fill-bonus={hasBonus} style="width: {level}%"></div>
+												</div>
+												<span class="shop-skill-value" class:shop-skill-bonus={hasBonus}>{level}</span>
 											</div>
-											<span class="shop-skill-value">{level}</span>
-										</div>
+											{/snippet}
+											{#snippet content()}
+												<span class="tt-label">{SECTOR_LABELS[s]} skill</span>
+												<div>Start: <strong>{level}</strong></div>
+												<div>Na 1x training: <strong>{Math.min(100, level + trainGain)}</strong> <span class="tt-positive">(+{trainGain})</span></div>
+												{#if hasBonus}
+													<div class="tt-divider"></div>
+													<div class="tt-positive">{bonus.label}: <strong>+{bonus.bonus}</strong> op opdrachten in deze sector</div>
+												{/if}
+											{/snippet}
+										</Tooltip>
 									{/each}
 								</div>
 							</button>
@@ -875,15 +1069,47 @@
 					<h3>&#x1F3ED; Leveranciers</h3>
 					<div class="shop-grid">
 						{#each SUPPLIERS as s}
+							{@const alreadyContracted = player?.suppliers.some(ps => ps.id === s.id) ?? false}
+							{@const continentLocked = !(player?.continents[s.continent].unlocked ?? false)}
+							{@const boostEntries = Object.entries(s.skillBoost) as [Sector, number][]}
 							<button class="shop-item"
 								onclick={() => doAction({ type: 'CONTRACT_SUPPLIER', supplierId: s.id })}
-								disabled={player && (player.cash < s.setupCost || player.suppliers.some(ps => ps.id === s.id) || !player.continents[s.continent].unlocked)}>
+								disabled={player && (player.cash < s.setupCost || alreadyContracted || continentLocked)}>
 								<div class="shop-name">{s.name}</div>
-								<div class="shop-cost">&#x1F4B0; {s.setupCost} cash</div>
-								<div>{s.bonus}</div>
-								<span class="continent-badge" style="background: {CONTINENT_COLORS[s.continent]}20; color: {CONTINENT_COLORS[s.continent]}; border: 1px solid {CONTINENT_COLORS[s.continent]}40">
-									{CONTINENT_CONFIG[s.continent].name}
-								</span>
+								<Tooltip position="top">
+									{#snippet children()}<div class="shop-cost">&#x1F4B0; {s.setupCost} cash</div>{/snippet}
+									{#snippet content()}<span class="tt-label">Eenmalige kost</span>Wordt direct van je cash afgetrokken. Daarna is de bonus <strong>permanent</strong> actief — geen doorlopende kosten{/snippet}
+								</Tooltip>
+								<Tooltip position="top">
+									{#snippet children()}<div class="supplier-bonus">{s.bonus}</div>{/snippet}
+									{#snippet content()}
+										<span class="tt-label">Permanente bonus</span>
+										{#each boostEntries as [sector, boost]}
+											<div>Bij elke <strong>{SECTOR_LABELS[sector]}</strong>-opdracht krijg je <span class="tt-positive">+{boost}</span> extra op je score</div>
+										{/each}
+										<div class="tt-divider"></div>
+										<div>Werkt voor <strong>alle</strong> humanoids, ongeacht type</div>
+									{/snippet}
+								</Tooltip>
+								<Tooltip position="top">
+									{#snippet children()}
+									<span class="continent-badge" style="background: {CONTINENT_COLORS[s.continent]}20; color: {CONTINENT_COLORS[s.continent]}; border: 1px solid {CONTINENT_COLORS[s.continent]}40">
+										{CONTINENT_CONFIG[s.continent].name}
+										{#if continentLocked}&#x1F512;{/if}
+									</span>
+									{/snippet}
+									{#snippet content()}
+										<span class="tt-label">Continent</span>
+										{#if continentLocked}
+											<span class="tt-negative">Je moet <strong>{CONTINENT_CONFIG[s.continent].name}</strong> eerst ontgrendelen (25 cash) voordat je deze leverancier kunt contracteren</span>
+										{:else}
+											<span class="tt-positive">{CONTINENT_CONFIG[s.continent].name} is ontgrendeld</span>
+										{/if}
+									{/snippet}
+								</Tooltip>
+								{#if alreadyContracted}
+									<span class="badge badge-success supplier-contracted">Al gecontracteerd</span>
+								{/if}
 							</button>
 						{/each}
 					</div>
@@ -925,14 +1151,54 @@
 								<span class="type-hint type-hint-human">&#x1F464; Mensen leren minder bij.</span>
 							{/if}
 						</p>
+						<div class="modal-info-row">
+							<Tooltip position="top">
+								{#snippet children()}<span class="modal-info-item">&#x1F4B0; Kost: {trainCostModal} cash</span>{/snippet}
+								{#snippet content()}<span class="tt-label">Trainingskost</span>{trainH.card.type === 'robot' ? 'Robots kosten meer om te trainen (25 cash) maar leren veel sneller' : 'Mensen zijn goedkoper om te trainen (15 cash) maar leren minder bij'}{/snippet}
+							</Tooltip>
+							<Tooltip position="top">
+								{#snippet children()}<span class="modal-info-item">&#x23F3; 1 beurt wachten</span>{/snippet}
+								{#snippet content()}<span class="tt-label">Beschikbaarheid</span>De resource is <strong>1 beurt niet inzetbaar</strong> voor opdrachten. Aan het einde van de volgende beurt is de training klaar{/snippet}
+							</Tooltip>
+							<Tooltip position="top">
+								{#snippet children()}<span class="modal-info-item">&#x1F4C8; +{trainGain} skill</span>{/snippet}
+								{#snippet content()}<span class="tt-label">Skill-groei</span>{trainH.card.type === 'robot' ? `Robots krijgen +${trainGain} skill (8 × 2.0 multiplier)` : `Mensen krijgen +${trainGain} skill (8 × 0.5 multiplier)`}. Training verhoogt ook het trainingslevel (+5 bonus op alle opdrachten){/snippet}
+							</Tooltip>
+							{#if trainH.card.type === 'robot'}
+								<Tooltip position="top">
+									{#snippet children()}<span class="modal-info-item">&#x1F6E1;&#xFE0F; +15 veiligheid</span>{/snippet}
+									{#snippet content()}<span class="tt-label">Veiligheidsbonus</span>Elke training verhoogt de veiligheid van robots met <strong>+15</strong>. Hogere veiligheid verbetert je <strong>Veiligheid</strong>-score in de Impact Score{/snippet}
+								</Tooltip>
+							{/if}
+						</div>
 						<div class="shop-grid">
 							{#each Object.entries(trainH.card.skills) as [sector, level]}
-								<button class="shop-item sector-choice"
-									onclick={() => { doAction({ type: 'TRAIN_HUMANOID', playerHumanoidId: trainTargetId!, sector: sector as Sector }); showTrainModal = false; trainTargetId = null; }}>
-									<div class="shop-name">{SECTOR_LABELS[sector as Sector]}</div>
-									<div class="sector-current">Huidig: <strong>{level}</strong></div>
-									<div class="sector-after">Na training: <strong>{Math.min(100, level + trainGain)}</strong> <span class="sector-gain">+{trainGain}</span></div>
-								</button>
+								{@const s = sector as Sector}
+								{@const bonus = SECTOR_TYPE_BONUS[s]}
+								{@const hasBonus = bonus.preferred === trainH.card.type}
+								<Tooltip position="top">
+									{#snippet children()}
+									<button class="shop-item sector-choice"
+										onclick={() => { doAction({ type: 'TRAIN_HUMANOID', playerHumanoidId: trainTargetId!, sector: s }); showTrainModal = false; trainTargetId = null; }}>
+										<div class="shop-name" class:shop-skill-bonus={hasBonus}>{SECTOR_LABELS[s]} {#if hasBonus}<span class="sector-star">&#x2B50;</span>{/if}</div>
+										<div class="sector-current">Huidig: <strong>{level}</strong></div>
+										<div class="sector-after">Na training: <strong>{Math.min(100, level + trainGain)}</strong> <span class="sector-gain">+{trainGain}</span></div>
+									</button>
+									{/snippet}
+									{#snippet content()}
+										<span class="tt-label">{SECTOR_LABELS[s]} training</span>
+										<div class="tt-row"><span>Huidige skill</span><span class="tt-value">{level}</span></div>
+										<div class="tt-row"><span>Na training</span><span class="tt-positive">{Math.min(100, level + trainGain)}</span></div>
+										{#if hasBonus}
+											<div class="tt-divider"></div>
+											<div class="tt-positive">{bonus.label}: +{bonus.bonus} extra op {SECTOR_LABELS[s]}-opdrachten</div>
+										{/if}
+										{#if level + trainGain >= 100}
+											<div class="tt-divider"></div>
+											<div class="tt-negative">Let op: skill is al (bijna) maximaal — training levert minder op</div>
+										{/if}
+									{/snippet}
+								</Tooltip>
 							{/each}
 						</div>
 						<button class="btn-outline modal-cancel" onclick={() => { showTrainModal = false; trainTargetId = null; }}>Annuleren</button>
@@ -953,14 +1219,58 @@
 								<span class="type-hint type-hint-human">&#x1F464; Mensen upgraden minder.</span>
 							{/if}
 						</p>
+						<div class="modal-info-row">
+							<Tooltip position="top">
+								{#snippet children()}<span class="modal-info-item">&#x1F4B0; Kost: 20 cash</span>{/snippet}
+								{#snippet content()}<span class="tt-label">Upgradekost</span>Vaste prijs van <strong>20 cash</strong> ongeacht type (mens of robot){/snippet}
+							</Tooltip>
+							<Tooltip position="top">
+								{#snippet children()}<span class="modal-info-item">&#x26A1; Direct effect</span>{/snippet}
+								{#snippet content()}<span class="tt-label">Geen wachttijd</span>In tegenstelling tot training is een upgrade <strong>direct</strong> actief — de resource blijft inzetbaar{/snippet}
+							</Tooltip>
+							<Tooltip position="top">
+								{#snippet children()}<span class="modal-info-item">&#x1F4C8; +{upGain} skill</span>{/snippet}
+								{#snippet content()}<span class="tt-label">Skill-groei</span>{upH.card.type === 'robot' ? `Robots krijgen +${upGain} skill (10 × 2.0 multiplier)` : `Mensen krijgen +${upGain} skill (10 × 0.5 multiplier)`}{/snippet}
+							</Tooltip>
+							<Tooltip position="top">
+								{#snippet children()}<span class="modal-info-item">&#x2764;&#xFE0F; +30% conditie</span>{/snippet}
+								{#snippet content()}<span class="tt-label">Conditieherstel</span>Herstelt <strong>+30%</strong> conditie. Huidige conditie: <strong>{upH.condition}%</strong> → <strong class="tt-positive">{Math.min(100, upH.condition + 30)}%</strong>. Conditie onder 50% geeft strafpunten op opdrachten{/snippet}
+							</Tooltip>
+							{#if upH.card.type === 'robot'}
+								<Tooltip position="top">
+									{#snippet children()}<span class="modal-info-item">&#x1F6E1;&#xFE0F; +10 veiligheid</span>{/snippet}
+									{#snippet content()}<span class="tt-label">Veiligheidsbonus</span>Elke upgrade verhoogt de veiligheid van robots met <strong>+10</strong>. Huidige veiligheid: <strong>{upH.safety}</strong> → <strong class="tt-positive">{Math.min(100, upH.safety + 10)}</strong>{/snippet}
+								</Tooltip>
+							{/if}
+						</div>
 						<div class="shop-grid">
 							{#each Object.entries(upH.card.skills) as [sector, level]}
-								<button class="shop-item sector-choice"
-									onclick={() => { doAction({ type: 'UPGRADE_HUMANOID', playerHumanoidId: upgradeTargetId!, sector: sector as Sector }); showUpgradeModal = false; upgradeTargetId = null; }}>
-									<div class="shop-name">{SECTOR_LABELS[sector as Sector]}</div>
-									<div class="sector-current">Huidig: <strong>{level}</strong></div>
-									<div class="sector-after">Na upgrade: <strong>{Math.min(100, level + upGain)}</strong> <span class="sector-gain">+{upGain}</span></div>
-								</button>
+								{@const s = sector as Sector}
+								{@const bonus = SECTOR_TYPE_BONUS[s]}
+								{@const hasBonus = bonus.preferred === upH.card.type}
+								<Tooltip position="top">
+									{#snippet children()}
+									<button class="shop-item sector-choice"
+										onclick={() => { doAction({ type: 'UPGRADE_HUMANOID', playerHumanoidId: upgradeTargetId!, sector: s }); showUpgradeModal = false; upgradeTargetId = null; }}>
+										<div class="shop-name" class:shop-skill-bonus={hasBonus}>{SECTOR_LABELS[s]} {#if hasBonus}<span class="sector-star">&#x2B50;</span>{/if}</div>
+										<div class="sector-current">Huidig: <strong>{level}</strong></div>
+										<div class="sector-after">Na upgrade: <strong>{Math.min(100, level + upGain)}</strong> <span class="sector-gain">+{upGain}</span></div>
+									</button>
+									{/snippet}
+									{#snippet content()}
+										<span class="tt-label">{SECTOR_LABELS[s]} upgrade</span>
+										<div class="tt-row"><span>Huidige skill</span><span class="tt-value">{level}</span></div>
+										<div class="tt-row"><span>Na upgrade</span><span class="tt-positive">{Math.min(100, level + upGain)}</span></div>
+										{#if hasBonus}
+											<div class="tt-divider"></div>
+											<div class="tt-positive">{bonus.label}: +{bonus.bonus} extra op {SECTOR_LABELS[s]}-opdrachten</div>
+										{/if}
+										{#if level + upGain >= 100}
+											<div class="tt-divider"></div>
+											<div class="tt-negative">Let op: skill is al (bijna) maximaal — upgrade levert minder op</div>
+										{/if}
+									{/snippet}
+								</Tooltip>
 							{/each}
 						</div>
 						<button class="btn-outline modal-cancel" onclick={() => { showUpgradeModal = false; upgradeTargetId = null; }}>Annuleren</button>
@@ -1015,6 +1325,430 @@
 							Tutorial overslaan
 						</button>
 					{/if}
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if showJobResultPopup && jobResultsDisplay.length > 0}
+		<div class="log-overlay" role="presentation">
+			<div class="jobresult-modal card" onclick={(e) => e.stopPropagation()} role="dialog">
+				<div class="jobresult-header">
+					<h3>Opdracht Resultaten</h3>
+				</div>
+				{#each jobResultsDisplay as jr, i}
+					<div class="jobresult-entry" class:jobresult-success={jr.actionSuccess && jr.result.outcome === 'success'} class:jobresult-partial={jr.actionSuccess && jr.result.outcome === 'partial'} class:jobresult-failed={jr.actionSuccess && jr.result.outcome === 'failed'} class:jobresult-error={!jr.actionSuccess}>
+						<div class="jobresult-title-row">
+							<span class="jobresult-job-name">"{jr.jobTitle}"</span>
+							<span class="badge badge-info">{SECTOR_LABELS[jr.jobSector]}</span>
+						</div>
+						<div class="jobresult-humanoid">
+							{jr.humanoidType === 'robot' ? '\u{1F916}' : '\u{1F464}'} {jr.humanoidName}
+						</div>
+
+						{#if !jr.actionSuccess}
+							<div class="jobresult-error-msg">
+								&#x26A0;&#xFE0F; {jr.errorMessage}
+							</div>
+						{:else}
+							{@const bd = jr.result.breakdown}
+							<div class="jobresult-breakdown">
+								<Tooltip position="right">
+									{#snippet children()}
+									<div class="jobresult-score-row jr-hoverable">
+										<span>&#x1F3AF; Skill ({SECTOR_LABELS[jr.jobSector]})</span>
+										<span class="jr-positive">+{bd.skillScore}</span>
+									</div>
+									{/snippet}
+									{#snippet content()}<span class="tt-label">Sector-skill</span>De {SECTOR_LABELS[jr.jobSector]}-skill van {jr.humanoidName}. Hoe hoger de skill in de gevraagde sector, hoe beter de match. Verhoog via <strong>training</strong> of <strong>upgrade</strong>.{/snippet}
+								</Tooltip>
+								<Tooltip position="right">
+									{#snippet children()}
+									<div class="jobresult-score-row jr-hoverable">
+										<span>&#x1F527; Betrouwbaarheid</span>
+										<span class="jr-positive">+{bd.reliabilityScore}</span>
+									</div>
+									{/snippet}
+									{#snippet content()}<span class="tt-label">Betrouwbaarheid</span>30% van de betrouwbaarheidsscore van je resource. Dit is een vast kenmerk per humanoid en kan niet worden verhoogd.{/snippet}
+								</Tooltip>
+								{#if bd.trainingBonus > 0}
+									<Tooltip position="right">
+										{#snippet children()}
+										<div class="jobresult-score-row jr-hoverable">
+											<span>&#x1F393; Training</span>
+											<span class="jr-positive">+{bd.trainingBonus}</span>
+										</div>
+										{/snippet}
+										{#snippet content()}<span class="tt-label">Trainingsbonus</span><strong>+5 per trainingslevel</strong>. {jr.humanoidName} heeft level {bd.trainingBonus / 5}. Elke training verhoogt het level met 1.{/snippet}
+									</Tooltip>
+								{/if}
+								{#if bd.supplierBonus > 0}
+									<Tooltip position="right">
+										{#snippet children()}
+										<div class="jobresult-score-row jr-hoverable">
+											<span>&#x1F3ED; Leverancier</span>
+											<span class="jr-positive">+{bd.supplierBonus}</span>
+										</div>
+										{/snippet}
+										{#snippet content()}<span class="tt-label">Leveranciersbonus</span>Permanente bonus van gecontracteerde leveranciers die de <strong>{SECTOR_LABELS[jr.jobSector]}</strong>-sector versterken.{/snippet}
+									</Tooltip>
+								{/if}
+								{#if bd.typeBonus > 0}
+									<Tooltip position="right">
+										{#snippet children()}
+										<div class="jobresult-score-row jr-hoverable">
+											<span>{jr.humanoidType === 'robot' ? '\u{26A1}' : '\u{2764}\u{FE0F}'} {bd.typeBonusLabel}</span>
+											<span class="jr-positive">+{bd.typeBonus}</span>
+										</div>
+										{/snippet}
+										{#snippet content()}<span class="tt-label">Type-voordeel</span>{jr.humanoidType === 'robot' ? 'Robots' : 'Mensen'} zijn van nature beter in <strong>{SECTOR_LABELS[jr.jobSector]}</strong>. Dit geeft een vaste bonus op alle opdrachten in deze sector.{/snippet}
+									</Tooltip>
+								{/if}
+								{#if bd.complianceModifier !== 0}
+									<Tooltip position="right">
+										{#snippet children()}
+										<div class="jobresult-score-row jr-hoverable">
+											<span>&#x1F4CB; Compliance</span>
+											<span class={bd.complianceModifier > 0 ? 'jr-positive' : 'jr-negative'}>{bd.complianceModifier > 0 ? '+' : ''}{bd.complianceModifier}</span>
+										</div>
+										{/snippet}
+										{#snippet content()}<span class="tt-label">Compliance-verschil</span>Het verschil tussen jouw compliance-score en de opdrachteis, ×0.1. {#if bd.complianceModifier < 0}<span class="tt-negative">Je compliance is te laag — doe een <strong>Compliance Check</strong> (+15) om dit te verbeteren.</span>{:else}<span class="tt-positive">Je compliance is hoger dan de eis — bonus!</span>{/if}{/snippet}
+									</Tooltip>
+								{/if}
+								<Tooltip position="right">
+									{#snippet children()}
+									<div class="jobresult-score-row jr-hoverable">
+										<span>&#x26A0;&#xFE0F; Risico</span>
+										<span class="jr-negative">-{bd.riskPenalty}</span>
+									</div>
+									{/snippet}
+									{#snippet content()}<span class="tt-label">Opdrachtrisico</span>Vast risico van deze opdracht. Hoe hoger het risico, hoe moeilijker. Dit kun je niet beïnvloeden — kies opdrachten met lager risico als je score te laag is.{/snippet}
+								</Tooltip>
+								{#if bd.conditionPenalty > 0}
+									<Tooltip position="right">
+										{#snippet children()}
+										<div class="jobresult-score-row jr-hoverable">
+											<span>&#x1F4A5; Conditie-straf</span>
+											<span class="jr-negative">-{bd.conditionPenalty}</span>
+										</div>
+										{/snippet}
+										{#snippet content()}<span class="tt-label">Conditie-straf</span>Als de conditie onder <strong>50%</strong> zakt, krijg je strafpunten: (50 - conditie) × 0.3. Gebruik een <strong>Upgrade</strong> om +30% conditie te herstellen.{/snippet}
+									</Tooltip>
+								{/if}
+
+								<div class="jobresult-divider"></div>
+
+								<div class="jobresult-score-row jobresult-base">
+									<span>Basis score</span>
+									<span>{bd.baseScore}</span>
+								</div>
+
+								<Tooltip position="right">
+									{#snippet children()}
+									<div class="jobresult-dice jr-hoverable" class:dice-positive={bd.diceRoll > 0} class:dice-negative={bd.diceRoll < 0} class:dice-neutral={bd.diceRoll === 0}>
+										<span class="dice-icon">&#x1F3B2;</span>
+										<span class="dice-label">
+											{#if bd.diceRoll > 0}
+												Geluk! +{bd.diceRoll}
+											{:else if bd.diceRoll < 0}
+												Pech! {bd.diceRoll}
+											{:else}
+												Neutraal
+											{/if}
+										</span>
+										<span class="dice-value">{bd.diceRoll > 0 ? '+' : ''}{bd.diceRoll}</span>
+									</div>
+									{/snippet}
+									{#snippet content()}<span class="tt-label">Dobbelsteenworp (2d6 - 7)</span>Er worden 2 dobbelstenen gegooid. Het resultaat gaat van <strong>-5</strong> (dubbel 1) tot <strong>+5</strong> (dubbel 6). Dit is puur geluk — je kunt het niet beïnvloeden. Een hogere basis score geeft meer buffer tegen pech.{/snippet}
+								</Tooltip>
+
+								<div class="jobresult-divider"></div>
+
+								<Tooltip position="right">
+									{#snippet children()}
+									<div class="jobresult-score-row jobresult-final jr-hoverable">
+										<span>Eindscore</span>
+										<span class="jobresult-final-value">{Math.round(jr.result.finalScore)}</span>
+									</div>
+									{/snippet}
+									{#snippet content()}
+										<span class="tt-label">Eindscore</span>
+										<div>Basis score ({bd.baseScore}) + dobbelsteen ({bd.diceRoll > 0 ? '+' : ''}{bd.diceRoll}) = <strong>{Math.round(jr.result.finalScore)}</strong></div>
+										<div class="tt-divider"></div>
+										<div class="tt-row"><span>70+</span><span class="tt-positive">Succes — volle beloning</span></div>
+										<div class="tt-row"><span>50-69</span><span>Gedeeltelijk — halve beloning</span></div>
+										<div class="tt-row"><span>&lt;50</span><span class="tt-negative">Mislukt — cash en reputatie verlies</span></div>
+									{/snippet}
+								</Tooltip>
+							</div>
+
+							<div class="jobresult-outcome" class:outcome-success={jr.result.outcome === 'success'} class:outcome-partial={jr.result.outcome === 'partial'} class:outcome-failed={jr.result.outcome === 'failed'}>
+								{#if jr.result.outcome === 'success'}
+									<div class="outcome-icon">&#x2705;</div>
+									<div class="outcome-text">
+										<strong>Succes!</strong>
+										<span class="outcome-rewards">
+											<span class="jr-positive">+{jr.jobReward} cash</span>
+											<span class="jr-positive">+{jr.jobRepReward} reputatie</span>
+										</span>
+									</div>
+								{:else if jr.result.outcome === 'partial'}
+									<div class="outcome-icon">&#x26A0;&#xFE0F;</div>
+									<div class="outcome-text">
+										<strong>Gedeeltelijk</strong>
+										<span class="outcome-rewards">
+											<span class="jr-positive">+{Math.floor(jr.jobReward * 0.5)} cash</span>
+											<span class="jr-positive">+1 reputatie</span>
+										</span>
+									</div>
+								{:else}
+									<div class="outcome-icon">&#x274C;</div>
+									<div class="outcome-text">
+										<strong>Mislukt</strong>
+										<span class="outcome-rewards">
+											<span class="jr-negative">-10 cash</span>
+											<span class="jr-negative">-5 reputatie</span>
+										</span>
+									</div>
+								{/if}
+							</div>
+						{/if}
+					</div>
+					{#if i < jobResultsDisplay.length - 1}
+						<div class="jobresult-separator"></div>
+					{/if}
+				{/each}
+				<div class="jobresult-actions">
+					<button class="btn-primary" onclick={dismissJobResults}>
+						{pendingEndTurnAfterResults ? 'Verder naar beurt samenvatting' : 'OK'}
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if showEndTurnPopup && endTurnStartState && endTurnPreviewState && endTurnStartImpact && endTurnPreviewImpact}
+		{@const cur = endTurnStartState}
+		{@const nxt = endTurnPreviewState}
+		{@const curImp = endTurnStartImpact}
+		{@const nxtImp = endTurnPreviewImpact}
+		{@const maintenanceCost = nxt.humanoids.reduce((s, h) => s + h.card.maintenanceCost, 0)}
+		{@const cashFromJobs = (nxt.cash - cur.cash) + maintenanceCost}
+		{@const newHumanoids = nxt.humanoids.filter(h => !cur.humanoids.some(ch => ch.id === h.id))}
+		{@const jobsDone = nxt.successfulJobs - cur.successfulJobs}
+		{@const partialJobs = nxt.jobsScored - cur.jobsScored - (nxt.successfulJobs - cur.successfulJobs) - (nxt.failedJobs - cur.failedJobs)}
+		{@const failedJobsDone = nxt.failedJobs - cur.failedJobs}
+		{@const repFromJobs = nxt.reputation - cur.reputation}
+		<div class="log-overlay" onclick={cancelEndTurn} role="presentation">
+			<div class="endturn-modal card" onclick={(e) => e.stopPropagation()} role="dialog">
+				<div class="endturn-header">
+					<h3>Beurt samenvatting — {cur.name}</h3>
+				</div>
+				<div class="endturn-table">
+					<div class="endturn-row endturn-row-header">
+						<div class="endturn-label-col"></div>
+						<div class="endturn-cur-col">Huidig</div>
+						<div class="endturn-arrow-col"></div>
+						<div class="endturn-new-col">Nieuw</div>
+					</div>
+
+					<div class="endturn-row">
+						<div class="endturn-label-col">&#x1F4B0; Geld</div>
+						<div class="endturn-cur-col">{cur.cash}</div>
+						<div class="endturn-arrow-col">
+							{#if nxt.cash - cur.cash !== 0}
+								<span class={nxt.cash - cur.cash > 0 ? 'endturn-pos' : 'endturn-neg'}>{nxt.cash - cur.cash > 0 ? '+' : ''}{nxt.cash - cur.cash}</span>
+							{:else}
+								<span class="endturn-neutral">—</span>
+							{/if}
+						</div>
+						<div class="endturn-new-col endturn-new">{nxt.cash}</div>
+					</div>
+					<div class="endturn-explain">
+						{#if cashFromJobs > 0}
+							<span class="endturn-pos">+{cashFromJobs} uit opdrachten</span>
+						{:else if cashFromJobs < 0}
+							<span class="endturn-neg">{cashFromJobs} uit mislukte opdrachten</span>
+						{/if}
+						{#if maintenanceCost > 0}
+							<span class="endturn-neg">-{maintenanceCost} onderhoud</span>
+							<span class="endturn-explain-sub">
+								({#each nxt.humanoids as h, i}{#if i > 0}, {/if}{h.card.name} -{h.card.maintenanceCost}{/each})
+							</span>
+						{/if}
+					</div>
+
+					<div class="endturn-row">
+						<div class="endturn-label-col">&#x2B50; Totale reputatie</div>
+						<div class="endturn-cur-col">{cur.reputation}</div>
+						<div class="endturn-arrow-col">
+							{#if repFromJobs !== 0}
+								<span class={repFromJobs > 0 ? 'endturn-pos' : 'endturn-neg'}>{repFromJobs > 0 ? '+' : ''}{repFromJobs}</span>
+							{:else}
+								<span class="endturn-neutral">—</span>
+							{/if}
+						</div>
+						<div class="endturn-new-col endturn-new">{nxt.reputation}</div>
+					</div>
+					<div class="endturn-explain">
+						{#if jobsDone > 0}
+							<span class="endturn-pos">+reputatie uit {jobsDone} geslaagde opdracht{jobsDone > 1 ? 'en' : ''}</span>
+						{/if}
+						{#if partialJobs > 0}
+							<span class="endturn-neutral-text">+1 per gedeeltelijke opdracht ({partialJobs}x)</span>
+						{/if}
+						{#if failedJobsDone > 0}
+							<span class="endturn-neg">-5 per mislukte opdracht ({failedJobsDone}x)</span>
+						{/if}
+						{#if repFromJobs === 0 && jobsDone === 0}
+							<span class="endturn-neutral-text">Geen opdrachten uitgevoerd deze beurt</span>
+						{/if}
+					</div>
+
+					<div class="endturn-row">
+						<div class="endturn-label-col">&#x1F916; Resources</div>
+						<div class="endturn-cur-col">{cur.humanoids.length}</div>
+						<div class="endturn-arrow-col">
+							{#if nxt.humanoids.length - cur.humanoids.length !== 0}
+								<span class={nxt.humanoids.length - cur.humanoids.length > 0 ? 'endturn-pos' : 'endturn-neg'}>{nxt.humanoids.length - cur.humanoids.length > 0 ? '+' : ''}{nxt.humanoids.length - cur.humanoids.length}</span>
+							{:else}
+								<span class="endturn-neutral">—</span>
+							{/if}
+						</div>
+						<div class="endturn-new-col endturn-new">{nxt.humanoids.length}</div>
+					</div>
+					<div class="endturn-explain">
+						{#if newHumanoids.length > 0}
+							<span class="endturn-pos">Gekocht: {newHumanoids.map(h => h.card.name).join(', ')}</span>
+						{:else}
+							<span class="endturn-neutral-text">Geen nieuwe resources gekocht</span>
+						{/if}
+					</div>
+
+					<div class="endturn-row">
+						<div class="endturn-label-col">&#x2705; Gelukte opdrachten</div>
+						<div class="endturn-cur-col">{cur.successfulJobs}</div>
+						<div class="endturn-arrow-col">
+							{#if jobsDone > 0}
+								<span class="endturn-pos">+{jobsDone}</span>
+							{:else}
+								<span class="endturn-neutral">—</span>
+							{/if}
+						</div>
+						<div class="endturn-new-col endturn-new">{nxt.successfulJobs}</div>
+					</div>
+					<div class="endturn-explain">
+						{#if jobsDone > 0}
+							<span class="endturn-pos">{jobsDone} opdracht{jobsDone > 1 ? 'en' : ''} succesvol afgerond</span>
+						{/if}
+						{#if partialJobs > 0}
+							<span class="endturn-neutral-text">{partialJobs} gedeeltelijk (telt niet als geslaagd)</span>
+						{/if}
+						{#if failedJobsDone > 0}
+							<span class="endturn-neg">{failedJobsDone} mislukt</span>
+						{/if}
+						{#if jobsDone === 0 && partialJobs <= 0 && failedJobsDone === 0}
+							<span class="endturn-neutral-text">Geen opdrachten uitgevoerd</span>
+						{/if}
+					</div>
+
+					<div class="endturn-row">
+						<div class="endturn-label-col">&#x1F3C6; Impact Score</div>
+						<div class="endturn-cur-col">{curImp.total}</div>
+						<div class="endturn-arrow-col">
+							{#if nxtImp.total - curImp.total !== 0}
+								<span class={nxtImp.total - curImp.total > 0 ? 'endturn-pos' : 'endturn-neg'}>{nxtImp.total - curImp.total > 0 ? '+' : ''}{nxtImp.total - curImp.total}</span>
+							{:else}
+								<span class="endturn-neutral">—</span>
+							{/if}
+						</div>
+						<div class="endturn-new-col endturn-new">{nxtImp.total}</div>
+					</div>
+				</div>
+
+				<div class="endturn-impact-detail">
+					<div class="endturn-detail-title">Impact Score Detail</div>
+					<div class="endturn-detail-grid">
+						<div class="endturn-detail-header"></div>
+						<div class="endturn-detail-header">Huidig</div>
+						<div class="endturn-detail-header">Verandering</div>
+						<div class="endturn-detail-header">Nieuw</div>
+						{#each [
+							{ icon: '\u{1F4B0}', label: 'Winst', cur: curImp.winst, nxt: nxtImp.winst, explain: `Gebaseerd op cash (${nxt.cash} / 8)` },
+							{ icon: '\u{1F4A1}', label: 'Innovatie', cur: curImp.innovatie, nxt: nxtImp.innovatie, explain: `${nxt.trainingsCompleted} trainingen + ${nxt.upgradesCompleted} upgrades` },
+							{ icon: '\u{1F91D}', label: 'Vertrouwen', cur: curImp.vertrouwen, nxt: nxtImp.vertrouwen, explain: `Reputatie ${nxt.reputation} + ${nxt.successfulJobs} geslaagde jobs` },
+							{ icon: '\u{1F6E1}\u{FE0F}', label: 'Veiligheid', cur: curImp.veiligheid, nxt: nxtImp.veiligheid, explain: `Gem. veiligheid van je resources` },
+							{ icon: '\u{1F30D}', label: 'Duurzaamheid', cur: curImp.duurzaamheid, nxt: nxtImp.duurzaamheid, explain: `Continenten ontgrendeld - reizen` },
+							{ icon: '\u{2699}\u{FE0F}', label: 'Complexiteit', cur: curImp.complexiteit, nxt: nxtImp.complexiteit, explain: `Straf voor ${nxt.humanoids.length} resources` },
+						] as row}
+							<div class="endturn-detail-label">{row.icon} {row.label}</div>
+							<div class="endturn-detail-val">{row.cur}</div>
+							<div class="endturn-detail-val">
+								{#if row.nxt !== row.cur}
+									<span class={row.nxt > row.cur ? 'endturn-pos' : 'endturn-neg'}>
+										{row.nxt > row.cur ? '+' : ''}{row.nxt - row.cur}
+									</span>
+								{:else}
+									<span class="endturn-neutral">—</span>
+								{/if}
+							</div>
+							<div class="endturn-detail-val endturn-new">{row.nxt}</div>
+							<div class="endturn-detail-explain">{row.explain}</div>
+						{/each}
+					</div>
+				</div>
+
+				<div class="endturn-actions">
+					<button class="btn-outline" onclick={cancelEndTurn}>Annuleren</button>
+					<button class="btn-primary" onclick={confirmEndTurn}>Akkoord</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if showPodiumPopup && (state.status === 'won' || state.status === 'lost')}
+		{@const sortedPlayers = [...state.players].sort((a, b) => {
+			const scoreA = calculatePlayerImpactScore(a, state.maxRounds).total;
+			const scoreB = calculatePlayerImpactScore(b, state.maxRounds).total;
+			return scoreB - scoreA;
+		})}
+		<div class="log-overlay" role="presentation">
+			<div class="podium-modal card" role="dialog">
+				<h2 class="podium-title">Eindstand</h2>
+				<div class="podium-stage">
+					{#each sortedPlayers as p, rank}
+						{@const impact = calculatePlayerImpactScore(p, state.maxRounds)}
+						{@const goals = [p.cash > 0, p.reputation >= 50, p.successfulJobs >= 6]}
+						{@const goalsCount = goals.filter(Boolean).length}
+						<div class="podium-entry" class:podium-1={rank === 0} class:podium-2={rank === 1} class:podium-3={rank === 2} class:podium-off={rank >= 3}>
+							<div class="podium-rank">
+								{#if rank === 0}
+									<span class="podium-medal">&#x1F947;</span>
+								{:else if rank === 1}
+									<span class="podium-medal">&#x1F948;</span>
+								{:else if rank === 2}
+									<span class="podium-medal">&#x1F949;</span>
+								{:else}
+									<span class="podium-medal-none">#{rank + 1}</span>
+								{/if}
+							</div>
+							<div class="podium-bar" style="height: {Math.max(30, 120 - rank * 30)}px; background: {p.color}20; border: 2px solid {p.color};">
+								<div class="podium-player-name" style="color: {p.color}">{p.name}</div>
+								<div class="podium-score">{impact.total} punten</div>
+							</div>
+							<div class="podium-details">
+								<span>&#x1F4B0; {p.cash}</span>
+								<span>&#x2B50; {p.reputation}</span>
+								<span>&#x2705; {p.successfulJobs} opdrachten</span>
+								<span class={goalsCount >= 2 ? 'podium-win' : 'podium-lose'}>
+									{goalsCount}/3 doelen {goalsCount >= 2 ? 'behaald' : ''}
+								</span>
+							</div>
+						</div>
+					{/each}
+				</div>
+				<div class="podium-actions">
+					<button class="btn-primary btn-lg" onclick={handleQuit}>Terug naar start</button>
 				</div>
 			</div>
 		</div>
@@ -1580,6 +2314,10 @@
 		gap: 1px;
 	}
 
+	.breakdown-section :global(.tooltip-wrapper) {
+		width: 100%;
+	}
+
 	.breakdown-title {
 		font-size: 0.62rem;
 		text-transform: uppercase;
@@ -1735,6 +2473,15 @@
 		font-weight: 600;
 	}
 
+	.shop-skill-bonus {
+		color: #16a34a;
+		font-weight: 700;
+	}
+
+	.skill-fill-bonus {
+		background: #16a34a;
+	}
+
 	.shop-desc {
 		font-size: 0.8rem;
 		color: var(--color-text-light);
@@ -1881,6 +2628,42 @@
 	.modal-cancel {
 		margin-top: 0.5rem;
 		font-size: 0.8rem;
+	}
+
+	.modal-info-row {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-bottom: 0.75rem;
+		padding: 0.5rem 0.75rem;
+		background: #f0f9ff;
+		border-radius: 6px;
+		border: 1px solid #bfdbfe;
+	}
+
+	.modal-info-item {
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: #1e40af;
+		cursor: help;
+		white-space: nowrap;
+	}
+
+	.supplier-bonus {
+		font-size: 0.82rem;
+		color: #16a34a;
+		font-weight: 600;
+		margin-bottom: 0.25rem;
+		cursor: help;
+	}
+
+	.supplier-contracted {
+		margin-top: 0.25rem;
+		font-size: 0.68rem;
+	}
+
+	.sector-star {
+		font-size: 0.7rem;
 	}
 
 	.shop-type {
@@ -2220,5 +3003,504 @@
 
 	.btn-success:hover {
 		background: #15803d;
+	}
+
+	/* Job Result Popup */
+	.jobresult-modal {
+		width: 480px;
+		max-width: 95vw;
+		max-height: 85vh;
+		overflow-y: auto;
+		padding: 1.25rem 1.5rem;
+		box-shadow: var(--shadow-lg);
+	}
+
+	.jobresult-header {
+		margin-bottom: 1rem;
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: 0.5rem;
+	}
+
+	.jobresult-header h3 {
+		margin: 0;
+		font-size: 1.1rem;
+		color: var(--color-text);
+		text-transform: none;
+	}
+
+	.jobresult-entry {
+		padding: 0.75rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: #fafafa;
+	}
+
+	.jobresult-entry.jobresult-success { border-color: #86efac; background: #f0fdf4; }
+	.jobresult-entry.jobresult-partial { border-color: #fde68a; background: #fefce8; }
+	.jobresult-entry.jobresult-failed { border-color: #fca5a5; background: #fef2f2; }
+	.jobresult-entry.jobresult-error { border-color: #fca5a5; background: #fef2f2; }
+
+	.jobresult-title-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.25rem;
+	}
+
+	.jobresult-job-name {
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: var(--color-text);
+	}
+
+	.jobresult-humanoid {
+		font-size: 0.78rem;
+		color: var(--color-text-light);
+		margin-bottom: 0.5rem;
+	}
+
+	.jobresult-error-msg {
+		font-size: 0.85rem;
+		color: #dc2626;
+		font-weight: 600;
+		padding: 0.5rem 0;
+	}
+
+	.jobresult-breakdown {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		margin-bottom: 0.5rem;
+	}
+
+	.jobresult-breakdown :global(.tooltip-wrapper) {
+		width: 100%;
+	}
+
+	.jr-hoverable {
+		cursor: help;
+		border-radius: 4px;
+		padding-left: 0.25rem;
+		padding-right: 0.25rem;
+		transition: background 0.1s;
+	}
+
+	.jr-hoverable:hover {
+		background: rgba(0, 0, 0, 0.04);
+	}
+
+	.jobresult-score-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.78rem;
+		padding: 0.1rem 0;
+		color: var(--color-text-light);
+	}
+
+	.jobresult-score-row.jobresult-base {
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.jobresult-score-row.jobresult-final {
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: var(--color-text);
+	}
+
+	.jobresult-final-value {
+		font-size: 1.1rem;
+		font-weight: 800;
+	}
+
+	.jr-positive { color: #16a34a; font-weight: 600; }
+	.jr-negative { color: #dc2626; font-weight: 600; }
+
+	.jobresult-divider {
+		height: 1px;
+		background: var(--color-border);
+		margin: 0.3rem 0;
+	}
+
+	.jobresult-dice {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.4rem 0.6rem;
+		border-radius: 6px;
+		font-size: 0.82rem;
+		font-weight: 700;
+		margin: 0.25rem 0;
+	}
+
+	.jobresult-dice.dice-positive {
+		background: #dcfce7;
+		color: #166534;
+	}
+
+	.jobresult-dice.dice-negative {
+		background: #fef2f2;
+		color: #991b1b;
+	}
+
+	.jobresult-dice.dice-neutral {
+		background: #f1f5f9;
+		color: #64748b;
+	}
+
+	.dice-icon {
+		font-size: 1.2rem;
+	}
+
+	.dice-label {
+		flex: 1;
+	}
+
+	.dice-value {
+		font-size: 0.9rem;
+	}
+
+	.jobresult-outcome {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.6rem 0.75rem;
+		border-radius: 8px;
+		margin-top: 0.25rem;
+	}
+
+	.jobresult-outcome.outcome-success {
+		background: #dcfce7;
+		border: 1px solid #86efac;
+	}
+
+	.jobresult-outcome.outcome-partial {
+		background: #fef9c3;
+		border: 1px solid #fde68a;
+	}
+
+	.jobresult-outcome.outcome-failed {
+		background: #fef2f2;
+		border: 1px solid #fca5a5;
+	}
+
+	.outcome-icon {
+		font-size: 1.5rem;
+	}
+
+	.outcome-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.outcome-text strong {
+		font-size: 0.9rem;
+	}
+
+	.outcome-rewards {
+		display: flex;
+		gap: 0.75rem;
+		font-size: 0.8rem;
+	}
+
+	.jobresult-separator {
+		height: 1px;
+		background: var(--color-border);
+		margin: 0.75rem 0;
+	}
+
+	.jobresult-actions {
+		display: flex;
+		justify-content: center;
+		margin-top: 1rem;
+	}
+
+	/* End Turn Popup */
+	.endturn-modal {
+		width: 580px;
+		max-width: 95vw;
+		max-height: 85vh;
+		overflow-y: auto;
+		padding: 1.25rem 1.5rem;
+		box-shadow: var(--shadow-lg);
+	}
+
+	.endturn-header {
+		margin-bottom: 1rem;
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: 0.5rem;
+	}
+
+	.endturn-header h3 {
+		margin: 0;
+		font-size: 1.1rem;
+		color: var(--color-text);
+		text-transform: none;
+	}
+
+	.endturn-table {
+		margin-bottom: 1rem;
+	}
+
+	.endturn-row {
+		display: grid;
+		grid-template-columns: 180px 70px 80px 70px;
+		gap: 0.5rem;
+		align-items: center;
+		padding: 0.3rem 0;
+		border-bottom: 1px solid #f1f5f9;
+	}
+
+	.endturn-row-header {
+		border-bottom: 2px solid var(--color-border);
+		padding-bottom: 0.4rem;
+		margin-bottom: 0.2rem;
+	}
+
+	.endturn-label-col {
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.endturn-cur-col {
+		font-size: 0.85rem;
+		font-weight: 600;
+		text-align: center;
+	}
+
+	.endturn-arrow-col {
+		font-size: 0.78rem;
+		text-align: center;
+	}
+
+	.endturn-new-col {
+		font-size: 0.85rem;
+		font-weight: 600;
+		text-align: center;
+	}
+
+	.endturn-row-header .endturn-label-col,
+	.endturn-row-header .endturn-cur-col,
+	.endturn-row-header .endturn-arrow-col,
+	.endturn-row-header .endturn-new-col {
+		font-size: 0.7rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-text-light);
+	}
+
+	.endturn-new {
+		color: var(--color-primary);
+		font-weight: 700;
+	}
+
+	.endturn-explain {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		padding: 0.15rem 0 0.4rem 1.2rem;
+		font-size: 0.7rem;
+		line-height: 1.4;
+	}
+
+	.endturn-explain-sub {
+		font-size: 0.62rem;
+		color: var(--color-text-light);
+		font-weight: 400;
+		margin-left: 0.5rem;
+	}
+
+	.endturn-neutral-text {
+		color: var(--color-text-light);
+		font-style: italic;
+	}
+
+	.endturn-pos {
+		color: #16a34a;
+		font-weight: 600;
+	}
+
+	.endturn-neg {
+		color: #dc2626;
+		font-weight: 600;
+	}
+
+	.endturn-neutral {
+		color: var(--color-text-light);
+		opacity: 0.5;
+	}
+
+	.endturn-impact-detail {
+		background: #f8fafc;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		padding: 0.75rem;
+		margin-bottom: 1rem;
+	}
+
+	.endturn-detail-title {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-text-light);
+		margin-bottom: 0.5rem;
+	}
+
+	.endturn-detail-grid {
+		display: grid;
+		grid-template-columns: 1fr auto auto auto;
+		gap: 0.2rem 0.75rem;
+		align-items: center;
+	}
+
+	.endturn-detail-header {
+		font-size: 0.65rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-text-light);
+		text-align: center;
+	}
+
+	.endturn-detail-label {
+		font-size: 0.78rem;
+		color: var(--color-text);
+	}
+
+	.endturn-detail-val {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-align: center;
+		min-width: 3rem;
+	}
+
+	.endturn-detail-explain {
+		grid-column: 1 / -1;
+		font-size: 0.62rem;
+		color: var(--color-text-light);
+		font-style: italic;
+		padding-left: 1.5rem;
+		padding-bottom: 0.2rem;
+	}
+
+	.endturn-actions {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	/* Podium Popup */
+	.podium-modal {
+		width: 600px;
+		max-width: 95vw;
+		max-height: 85vh;
+		overflow-y: auto;
+		padding: 1.5rem 2rem;
+		box-shadow: var(--shadow-lg);
+		text-align: center;
+	}
+
+	.podium-title {
+		font-size: 1.5rem;
+		margin: 0 0 1.25rem;
+		color: var(--color-text);
+	}
+
+	.podium-stage {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.podium-entry {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.75rem 1rem;
+		border-radius: 10px;
+		background: #f8fafc;
+		border: 1px solid var(--color-border);
+	}
+
+	.podium-1 {
+		background: #fefce8;
+		border-color: #eab308;
+		box-shadow: 0 0 12px rgba(234, 179, 8, 0.25);
+	}
+
+	.podium-2 {
+		background: #f1f5f9;
+		border-color: #94a3b8;
+	}
+
+	.podium-3 {
+		background: #fdf4e8;
+		border-color: #d97706;
+	}
+
+	.podium-off {
+		opacity: 0.7;
+	}
+
+	.podium-rank {
+		flex-shrink: 0;
+		width: 2.5rem;
+		text-align: center;
+	}
+
+	.podium-medal {
+		font-size: 1.8rem;
+	}
+
+	.podium-medal-none {
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--color-text-light);
+	}
+
+	.podium-bar {
+		flex: 1;
+		border-radius: 8px;
+		padding: 0.5rem 0.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.podium-player-name {
+		font-weight: 700;
+		font-size: 1.05rem;
+	}
+
+	.podium-score {
+		font-weight: 700;
+		font-size: 1rem;
+		color: #b45309;
+	}
+
+	.podium-details {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		font-size: 0.72rem;
+		text-align: left;
+		min-width: 120px;
+	}
+
+	.podium-win {
+		color: #16a34a;
+		font-weight: 700;
+	}
+
+	.podium-lose {
+		color: #dc2626;
+		font-weight: 600;
+	}
+
+	.podium-actions {
+		margin-top: 0.5rem;
 	}
 </style>

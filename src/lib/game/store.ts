@@ -1,5 +1,5 @@
 import { writable, derived, get } from 'svelte/store';
-import type { GameState, GameAction } from './types.js';
+import type { GameState, GameAction, ActionResult } from './types.js';
 import { createGame, processAction } from './engine.js';
 import { TUTORIAL_STEPS, type TutorialStep } from './tutorial.js';
 
@@ -68,15 +68,22 @@ export function skipTutorial() {
 	lastMessage.set('Tutorial overgeslagen. Veel succes!');
 }
 
-export function performAction(action: GameAction) {
+export function previewAction(action: GameAction): ActionResult | null {
 	const state = get(gameState);
-	if (!state) return;
+	if (!state) return null;
+	return processAction(state, action);
+}
+
+export function performAction(action: GameAction): ActionResult | null {
+	const state = get(gameState);
+	if (!state) return null;
 
 	const result = processAction(state, action);
 	lastMessage.set(result.message);
 	if (result.success) {
 		gameState.set(result.updatedState);
 	}
+	return result;
 }
 
 export function resetGame() {

@@ -2,8 +2,6 @@ import adapterStatic from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
-const isGhPages = process.env.GHPAGES === 'true';
-
 export default defineConfig({
 	plugins: [
 		sveltekit({
@@ -13,12 +11,12 @@ export default defineConfig({
 			},
 
 			adapter: adapterStatic({
-				pages: isGhPages ? 'docs' : 'build',
-				assets: isGhPages ? 'docs' : 'build',
+				pages: 'build',
+				assets: 'build',
 				fallback: '404.html'
 			}),
 
-			paths: isGhPages ? { base: '/humanoid-horizons' } : {}
+			paths: process.env.GITHUB_PAGES === 'true' ? { base: '/humanoid-horizons' } : {}
 		})
 	]
 });

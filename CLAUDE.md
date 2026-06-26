@@ -69,10 +69,3 @@ SvelteKit pages using Svelte 5 runes (`$state`, `$derived`, `$effect`).
 
 Service name: `humanoid-horizons-claude`. Multi-stage build: node:22-slim builder + slim runner. Exposes port 3000.
 
-## Design Documents
-
-Full game design specs are in `doc/` (Dutch). Key files:
-- `01_PRODUCT_SPEC.md` — game concept, win/loss, MVP scope
-- `04_GAME_RULES_ENGINE.md` — action types, job scoring formula, round flow
-- `05_UI_UX_SPEC.md` — screen layouts, UI principles, color guide
-- `11_3D_VISUALS_AND_ART_PIPELINE.md` — 3D art direction, asset pipeline phases
