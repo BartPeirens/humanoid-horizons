@@ -1,5 +1,4 @@
 import adapterStatic from '@sveltejs/adapter-static';
-import adapterNode from '@sveltejs/adapter-node';
 
 const isGitHubPages = process.env.GITHUB_PAGES === 'true';
 
@@ -10,13 +9,11 @@ const config = {
 	},
 
 	kit: {
-		adapter: isGitHubPages
-			? adapterStatic({
-					pages: 'build',
-					assets: 'build',
-					fallback: '404.html'
-				})
-			: adapterNode(),
+		adapter: adapterStatic({
+			pages: 'build',
+			assets: 'build',
+			fallback: '404.html'
+		}),
 
 		paths: isGitHubPages ? { base: '/humanoid-horizons' } : {}
 	}

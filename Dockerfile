@@ -8,16 +8,9 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM node:22-slim AS runner
+FROM nginx:alpine
 
-WORKDIR /app
+COPY --from=builder /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN npm install -g sirv-cli
-
-COPY --from=builder /app/build ./build
-
-ENV NODE_ENV=production
-ENV PORT=3000
 EXPOSE 3000
-
-CMD ["sirv", "build", "--host", "0.0.0.0", "--port", "3000", "--single"]
