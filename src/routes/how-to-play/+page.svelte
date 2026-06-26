@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 </script>
 
 <div class="rules-page">
 	<nav class="nav-bar">
-		<a href="/" class="back-link">&#x2190; Terug naar start</a>
+		<a href="{base}/" class="back-link">&#x2190; Terug naar start</a>
 	</nav>
 
 	<div class="content">

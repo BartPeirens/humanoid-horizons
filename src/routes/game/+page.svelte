@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { base } from '$app/paths';
 	import {
 		gameState, currentPlayer, isGameActive, performAction, previewAction, lastMessage, resetGame,
 		tutorialActive, currentTutorialStep, advanceTutorial, skipTutorial, completeTutorial
@@ -135,7 +136,7 @@
 
 	onMount(() => {
 		if (!$gameState) {
-			goto('/');
+			goto(`${base}/`);
 			return;
 		}
 
@@ -379,7 +380,7 @@
 
 	function handleQuit() {
 		resetGame();
-		goto('/');
+		goto(`${base}/`);
 	}
 
 	function handleTutorialNext() {

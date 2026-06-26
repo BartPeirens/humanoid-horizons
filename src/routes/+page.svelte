@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { startNewGame } from '$lib/game/store';
 	import { goto } from '$app/navigation';
+	import { base } from '$app/paths';
 	import logo from '$lib/assets/logo.svg';
 
 	let playerCount = $state(2);
@@ -11,7 +12,7 @@
 	function handleStart() {
 		const names = playerNames.slice(0, playerCount).map((n, i) => n.trim() || `Speler ${i + 1}`);
 		startNewGame(playerCount, names, withTutorial);
-		goto('/game');
+		goto(`${base}/game`);
 	}
 </script>
 
@@ -33,7 +34,7 @@
 					<button class="btn-primary btn-lg" onclick={() => showSetup = true}>
 						Nieuw spel starten
 					</button>
-					<a href="/how-to-play" class="btn-outline btn-lg">Spelregels</a>
+					<a href="{base}/how-to-play" class="btn-outline btn-lg">Spelregels</a>
 				</div>
 			{:else}
 				<div class="setup-panel card">
