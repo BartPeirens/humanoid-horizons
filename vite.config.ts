@@ -13,7 +13,7 @@ export default defineConfig({
 			adapter: adapterStatic({
 				pages: 'build',
 				assets: 'build',
-				fallback: '404.html'
+				fallback: '200.html'
 			}),
 
 			paths: process.env.GITHUB_PAGES === 'true' ? { base: '/humanoid-horizons' } : {}
