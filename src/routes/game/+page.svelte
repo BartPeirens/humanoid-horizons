@@ -2115,15 +2115,12 @@
 		border-radius: var(--radius);
 		background: var(--color-surface);
 		transition: all var(--transition-fast);
-		-webkit-backdrop-filter: blur(6px);
-		backdrop-filter: blur(6px);
 	}
 
 	.job-item:hover:not(.locked), .humanoid-item:hover:not(.in-training) {
 		border-color: rgba(56, 189, 248, 0.35);
 		background: var(--color-surface-elevated);
 		box-shadow: var(--shadow-glow-primary);
-		transform: translateY(-1px);
 	}
 
 	.job-item.selected, .humanoid-item.selected {
