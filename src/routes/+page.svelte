@@ -116,6 +116,9 @@
 	.home {
 		min-height: 100vh;
 		padding: 2rem;
+		background: radial-gradient(ellipse at 30% 20%, rgba(56, 189, 248, 0.06), transparent 60%),
+					radial-gradient(ellipse at 70% 80%, rgba(167, 139, 250, 0.05), transparent 50%),
+					var(--color-bg);
 	}
 
 	.hero {
@@ -139,26 +142,29 @@
 		width: 64px;
 		height: 64px;
 		flex-shrink: 0;
+		filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.35));
 	}
 
 	.title {
-		font-size: 3rem;
+		font-family: var(--font-display);
+		font-size: 2.6rem;
 		margin-bottom: 0;
 		background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
+		letter-spacing: 0.04em;
 	}
 
 	.subtitle {
-		font-size: 1.2rem;
+		font-size: 1.15rem;
 		color: var(--color-text-light);
 		margin-bottom: 1rem;
 	}
 
 	.description {
-		color: var(--color-text-light);
-		line-height: 1.6;
+		color: var(--color-text-muted);
+		line-height: 1.65;
 		margin-bottom: 2rem;
 	}
 
@@ -174,25 +180,29 @@
 		align-items: center;
 		background: transparent;
 		color: var(--color-primary);
-		border: 2px solid var(--color-primary);
-		border-radius: var(--radius);
+		border: 1.5px solid var(--color-primary);
+		border-radius: var(--radius-lg);
 		padding: 0.75rem 2rem;
-		font-size: 1.1rem;
+		font-size: 1.05rem;
 		font-weight: 600;
-		transition: all 0.15s ease;
+		transition: all var(--transition-fast);
 	}
 
 	.cta-buttons a:hover {
-		background: var(--color-primary);
-		color: white;
+		background: var(--color-primary-subtle);
+		box-shadow: var(--shadow-glow-primary);
 	}
 
 	.setup-panel {
 		padding: 1.5rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
 	}
 
 	.setup-panel h2 {
 		margin-bottom: 1rem;
+		color: var(--color-text);
 	}
 
 	.player-count {
@@ -203,6 +213,7 @@
 		display: block;
 		margin-bottom: 0.5rem;
 		font-weight: 600;
+		color: var(--color-text-light);
 	}
 
 	.count-buttons {
@@ -226,14 +237,24 @@
 	.name-input label {
 		min-width: 5rem;
 		font-weight: 500;
+		color: var(--color-text-light);
 	}
 
 	.name-input input {
 		flex: 1;
-		padding: 0.4rem 0.75rem;
+		padding: 0.45rem 0.8rem;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
-		font-size: 0.9rem;
+		font-size: 0.88rem;
+		background: var(--color-surface-elevated);
+		color: var(--color-text);
+		transition: border-color var(--transition-fast);
+	}
+
+	.name-input input:focus {
+		outline: none;
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 2px var(--color-primary-glow);
 	}
 
 	.tutorial-toggle {
@@ -245,7 +266,8 @@
 		align-items: center;
 		gap: 0.5rem;
 		cursor: pointer;
-		font-size: 0.9rem;
+		font-size: 0.88rem;
+		color: var(--color-text-light);
 	}
 
 	.toggle-label input[type="checkbox"] {
@@ -277,6 +299,7 @@
 		top: var(--y);
 		animation: float 3s ease-in-out infinite;
 		animation-delay: var(--delay);
+		filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.2));
 	}
 
 	@keyframes float {
@@ -292,15 +315,32 @@
 		gap: 1.5rem;
 	}
 
+	.feature {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: 1.25rem;
+		transition: all var(--transition-fast);
+	}
+
+	.feature:hover {
+		border-color: rgba(56, 189, 248, 0.2);
+		box-shadow: var(--shadow-glow-primary);
+		transform: translateY(-2px);
+	}
+
 	.feature h3 {
 		color: var(--color-primary);
 		margin-bottom: 0.5rem;
+		font-family: var(--font-display);
+		font-size: 0.9rem;
+		letter-spacing: 0.04em;
 	}
 
 	.feature p {
-		color: var(--color-text-light);
-		font-size: 0.9rem;
-		line-height: 1.5;
+		color: var(--color-text-muted);
+		font-size: 0.88rem;
+		line-height: 1.55;
 	}
 
 	@media (max-width: 768px) {
@@ -314,7 +354,7 @@
 			grid-template-columns: 1fr;
 		}
 		.title {
-			font-size: 2rem;
+			font-size: 1.8rem;
 		}
 	}
 </style>

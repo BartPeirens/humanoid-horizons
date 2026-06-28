@@ -12,29 +12,29 @@ const CONTINENTS: Record<string, ContinentDef> = {
 	'europe': {
 		center: { x: 1.25, z: -3.35 },
 		outline: [
-			{ x: -0.35, z: -3.10 }, // Iberië west
+			{ x: -0.35, z: -3.10 },
 			{ x: -0.20, z: -3.45 },
 			{ x: 0.05, z: -3.80 },
-			{ x: 0.35, z: -4.05 }, // Frankrijk / Benelux
-			{ x: 0.50, z: -4.45 }, // VK / Noordzee richting
-			{ x: 0.80, z: -4.85 }, // Scandinavië west
+			{ x: 0.35, z: -4.05 },
+			{ x: 0.50, z: -4.45 },
+			{ x: 0.80, z: -4.85 },
 			{ x: 1.15, z: -5.10 },
 			{ x: 1.55, z: -5.20 },
 			{ x: 1.95, z: -5.00 },
-			{ x: 2.25, z: -4.75 }, // Finland / Rusland west
+			{ x: 2.25, z: -4.75 },
 			{ x: 2.55, z: -4.25 },
 			{ x: 2.70, z: -3.80 },
 			{ x: 2.55, z: -3.35 },
-			{ x: 2.30, z: -3.00 }, // Oost-Europa
+			{ x: 2.30, z: -3.00 },
 			{ x: 2.05, z: -2.80 },
-			{ x: 2.20, z: -2.45 }, // Balkan/Griekenland
+			{ x: 2.20, z: -2.45 },
 			{ x: 1.85, z: -2.30 },
-			{ x: 1.55, z: -2.10 }, // Italië top
-			{ x: 1.35, z: -2.40 }, // Italië "laars"
+			{ x: 1.55, z: -2.10 },
+			{ x: 1.35, z: -2.40 },
 			{ x: 1.10, z: -2.25 },
 			{ x: 0.80, z: -2.20 },
 			{ x: 0.45, z: -2.30 },
-			{ x: 0.10, z: -2.45 }, // Spanje
+			{ x: 0.10, z: -2.45 },
 			{ x: -0.20, z: -2.70 },
 		],
 		color: 0xEF5350,
@@ -43,7 +43,7 @@ const CONTINENTS: Record<string, ContinentDef> = {
 	'asia': {
 		center: { x: 5.75, z: -2.65 },
 		outline: [
-			{ x: 2.35, z: -4.10 }, // overgang vanuit Europa
+			{ x: 2.35, z: -4.10 },
 			{ x: 3.10, z: -4.75 },
 			{ x: 4.20, z: -5.20 },
 			{ x: 5.40, z: -5.35 },
@@ -51,22 +51,22 @@ const CONTINENTS: Record<string, ContinentDef> = {
 			{ x: 7.40, z: -4.95 },
 			{ x: 8.15, z: -4.55 },
 			{ x: 8.65, z: -3.95 },
-			{ x: 8.85, z: -3.30 }, // verre oosten
+			{ x: 8.85, z: -3.30 },
 			{ x: 8.75, z: -2.75 },
-			{ x: 8.30, z: -2.25 }, // China / Korea
+			{ x: 8.30, z: -2.25 },
 			{ x: 8.55, z: -1.70 },
 			{ x: 8.15, z: -1.10 },
 			{ x: 7.60, z: -0.65 },
 			{ x: 7.05, z: -0.30 },
-			{ x: 7.25, z: 0.20 }, // Zuidoost-Azië
+			{ x: 7.25, z: 0.20 },
 			{ x: 6.90, z: 0.70 },
 			{ x: 6.30, z: 0.55 },
 			{ x: 5.75, z: 0.20 },
 			{ x: 5.20, z: 0.05 },
-			{ x: 5.05, z: 0.95 }, // India
+			{ x: 5.05, z: 0.95 },
 			{ x: 4.60, z: 0.40 },
 			{ x: 4.35, z: -0.20 },
-			{ x: 3.80, z: -0.20 }, // Midden-Oosten
+			{ x: 3.80, z: -0.20 },
 			{ x: 3.10, z: -0.60 },
 			{ x: 2.70, z: -1.10 },
 			{ x: 2.40, z: -1.80 },
@@ -79,24 +79,24 @@ const CONTINENTS: Record<string, ContinentDef> = {
 	'north-america': {
 		center: { x: -5.45, z: -2.65 },
 		outline: [
-			{ x: -7.90, z: -4.20 }, // Alaska
+			{ x: -7.90, z: -4.20 },
 			{ x: -7.45, z: -4.85 },
 			{ x: -6.80, z: -5.20 },
 			{ x: -6.00, z: -5.30 },
 			{ x: -5.15, z: -5.20 },
 			{ x: -4.45, z: -5.00 },
-			{ x: -3.85, z: -4.75 }, // Canada oost
+			{ x: -3.85, z: -4.75 },
 			{ x: -3.35, z: -4.25 },
 			{ x: -3.05, z: -3.70 },
 			{ x: -3.20, z: -3.20 },
-			{ x: -3.00, z: -2.65 }, // oostkust
+			{ x: -3.00, z: -2.65 },
 			{ x: -3.15, z: -2.05 },
 			{ x: -3.35, z: -1.55 },
-			{ x: -3.10, z: -1.10 }, // Florida
+			{ x: -3.10, z: -1.10 },
 			{ x: -3.55, z: -0.95 },
 			{ x: -4.05, z: -0.70 },
 			{ x: -4.40, z: -0.30 },
-			{ x: -4.75, z: 0.10 }, // Mexico / Central America
+			{ x: -4.75, z: 0.10 },
 			{ x: -5.15, z: 0.00 },
 			{ x: -5.45, z: -0.45 },
 			{ x: -5.85, z: -0.85 },
@@ -113,19 +113,19 @@ const CONTINENTS: Record<string, ContinentDef> = {
 	'south-america': {
 		center: { x: -3.20, z: 2.75 },
 		outline: [
-			{ x: -4.45, z: 0.20 }, // noordwest
+			{ x: -4.45, z: 0.20 },
 			{ x: -3.95, z: -0.05 },
 			{ x: -3.25, z: 0.00 },
 			{ x: -2.70, z: 0.35 },
 			{ x: -2.20, z: 0.90 },
-			{ x: -1.90, z: 1.55 }, // Braziliaanse uitstulping
+			{ x: -1.90, z: 1.55 },
 			{ x: -1.75, z: 2.20 },
 			{ x: -1.85, z: 2.90 },
 			{ x: -2.05, z: 3.55 },
 			{ x: -2.35, z: 4.15 },
 			{ x: -2.65, z: 4.70 },
 			{ x: -3.00, z: 5.20 },
-			{ x: -3.35, z: 5.55 }, // zuidelijk uiteinde
+			{ x: -3.35, z: 5.55 },
 			{ x: -3.70, z: 5.45 },
 			{ x: -4.00, z: 4.90 },
 			{ x: -4.25, z: 4.20 },
@@ -141,13 +141,13 @@ const CONTINENTS: Record<string, ContinentDef> = {
 	'africa': {
 		center: { x: 1.65, z: 1.35 },
 		outline: [
-			{ x: 0.20, z: -1.55 }, // Marokko
+			{ x: 0.20, z: -1.55 },
 			{ x: 0.80, z: -1.80 },
 			{ x: 1.55, z: -1.90 },
 			{ x: 2.20, z: -1.80 },
-			{ x: 2.75, z: -1.45 }, // Egypte
+			{ x: 2.75, z: -1.45 },
 			{ x: 3.10, z: -0.90 },
-			{ x: 3.45, z: -0.40 }, // Hoorn van Afrika
+			{ x: 3.45, z: -0.40 },
 			{ x: 3.65, z: 0.25 },
 			{ x: 3.55, z: 0.95 },
 			{ x: 3.30, z: 1.75 },
@@ -155,7 +155,7 @@ const CONTINENTS: Record<string, ContinentDef> = {
 			{ x: 2.70, z: 3.10 },
 			{ x: 2.30, z: 3.70 },
 			{ x: 1.85, z: 4.20 },
-			{ x: 1.35, z: 4.55 }, // Zuid-Afrika
+			{ x: 1.35, z: 4.55 },
 			{ x: 0.90, z: 4.35 },
 			{ x: 0.55, z: 3.85 },
 			{ x: 0.20, z: 3.20 },
@@ -171,7 +171,7 @@ const CONTINENTS: Record<string, ContinentDef> = {
 	'oceania': {
 		center: { x: 7.00, z: 2.95 },
 		outline: [
-			{ x: 5.65, z: 2.10 }, // Australië west
+			{ x: 5.65, z: 2.10 },
 			{ x: 6.15, z: 1.75 },
 			{ x: 6.85, z: 1.60 },
 			{ x: 7.55, z: 1.70 },
@@ -190,6 +190,7 @@ const CONTINENTS: Record<string, ContinentDef> = {
 		color: 0x26A69A,
 	},
 };
+
 export class BoardScene {
 	private scene: THREE.Scene;
 	private camera: THREE.OrthographicCamera;
@@ -197,7 +198,7 @@ export class BoardScene {
 	private raycaster: THREE.Raycaster;
 	private mouse: THREE.Vector2;
 	private continentGroups: Map<string, THREE.Group> = new Map();
-	private continentLandMeshes: Map<string, THREE.Mesh> = new Map();
+	private continentMaterials: Map<string, THREE.MeshStandardMaterial> = new Map();
 	private humanoidMeshes: Map<string, THREE.Mesh> = new Map();
 	private jobMeshes: Map<string, THREE.Mesh> = new Map();
 	private assignmentLines: THREE.Line[] = [];
@@ -205,10 +206,8 @@ export class BoardScene {
 	private hoveredObject: THREE.Object3D | null = null;
 	private animationId: number = 0;
 	private time: number = 0;
-	private waterMesh: THREE.Mesh | null = null;
 	private labelSprites: Map<string, THREE.Sprite> = new Map();
 	private selectedJobCard: THREE.Sprite | null = null;
-	private selectedJobData: Job | null = null;
 	private dragCylinder: THREE.Group | null = null;
 	private dragCylinderLabel: THREE.Sprite | null = null;
 	private assignedCylinders: THREE.Group[] = [];
@@ -223,15 +222,21 @@ export class BoardScene {
 	private maxFrustum = 22;
 	private _zoomLevel = 5;
 
+	private readonly HEX_SIZE = 0.4;
+	private readonly HEX_GAP = 0.94;
+	private readonly LAND_DEPTH = 0.18;
+	private readonly SEA_DEPTH = 0.09;
+
 	onContinentClick?: (continent: string) => void;
 	onJobClick?: (jobId: string) => void;
 	onHumanoidClick?: (humanoidId: string) => void;
 	onDrop?: (continent: string) => void;
 	onJobPlace?: (jobId: string, humanoidId: string) => void;
+	onZoomChange?: (level: number) => void;
 
 	constructor(private container: HTMLElement) {
 		this.scene = new THREE.Scene();
-		this.scene.background = new THREE.Color(0xB3D9F2);
+		this.scene.background = new THREE.Color(0x071520);
 
 		const aspect = container.clientWidth / container.clientHeight;
 		this.camera = new THREE.OrthographicCamera(
@@ -253,8 +258,7 @@ export class BoardScene {
 		this.mouse = new THREE.Vector2();
 
 		this.setupLighting();
-		this.buildOcean();
-		this.buildContinents();
+		this.buildHexGrid();
 		this.buildTradeRoutes();
 		this.createHighlightRing();
 
@@ -266,6 +270,7 @@ export class BoardScene {
 		this.renderer.domElement.addEventListener('mouseleave', this.onPanEnd.bind(this));
 
 		this.renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
+		this.renderer.domElement.addEventListener('dragenter', (e) => e.preventDefault());
 		this.renderer.domElement.addEventListener('dragover', this.onDragOver.bind(this));
 		this.renderer.domElement.addEventListener('drop', this.onDropEvent.bind(this));
 		this.renderer.domElement.addEventListener('dragleave', this.onDragLeave.bind(this));
@@ -276,11 +281,11 @@ export class BoardScene {
 	}
 
 	private setupLighting() {
-		const hemi = new THREE.HemisphereLight(0xffffff, 0x88aacc, 0.8);
+		const hemi = new THREE.HemisphereLight(0x6699cc, 0x0a1628, 0.8);
 		this.scene.add(hemi);
 
-		const dir = new THREE.DirectionalLight(0xfff8e7, 0.9);
-		dir.position.set(5, 15, 5);
+		const dir = new THREE.DirectionalLight(0xf0f4ff, 1.1);
+		dir.position.set(5, 18, 5);
 		dir.castShadow = true;
 		dir.shadow.mapSize.width = 2048;
 		dir.shadow.mapSize.height = 2048;
@@ -292,81 +297,178 @@ export class BoardScene {
 		dir.shadow.camera.bottom = -15;
 		this.scene.add(dir);
 
-		const ambient = new THREE.AmbientLight(0x6688bb, 0.4);
+		const ambient = new THREE.AmbientLight(0x4477aa, 0.4);
 		this.scene.add(ambient);
+
+		const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.2);
+		rimLight.position.set(-8, 10, -5);
+		this.scene.add(rimLight);
 	}
 
-	private buildOcean() {
-		const oceanGeo = new THREE.PlaneGeometry(40, 25);
-		const oceanMat = new THREE.MeshStandardMaterial({
-			color: 0x64B5F6,
-			roughness: 0.8,
-			metalness: 0.05,
-		});
-		this.waterMesh = new THREE.Mesh(oceanGeo, oceanMat);
-		this.waterMesh.rotation.x = -Math.PI / 2;
-		this.waterMesh.position.y = -0.1;
-		this.waterMesh.receiveShadow = true;
-		this.scene.add(this.waterMesh);
+	// ═══════════ HEX GRID ═══════════
 
-		const gridGeo = new THREE.PlaneGeometry(40, 25, 40, 25);
-		const gridMat = new THREE.MeshBasicMaterial({
-			color: 0x90CAF9,
-			wireframe: true,
-			transparent: true,
-			opacity: 0.12,
-		});
-		const grid = new THREE.Mesh(gridGeo, gridMat);
-		grid.rotation.x = -Math.PI / 2;
-		grid.position.y = -0.05;
-		this.scene.add(grid);
+	private createHexShape(size: number): THREE.Shape {
+		const shape = new THREE.Shape();
+		for (let i = 0; i < 6; i++) {
+			const angle = (Math.PI / 3) * i;
+			const x = size * Math.cos(angle);
+			const y = size * Math.sin(angle);
+			if (i === 0) shape.moveTo(x, y);
+			else shape.lineTo(x, y);
+		}
+		shape.closePath();
+		return shape;
 	}
 
-	private buildContinents() {
+	private hexToWorld(col: number, row: number): { x: number; z: number } {
+		const size = this.HEX_SIZE;
+		const x = col * 1.5 * size;
+		const z = row * Math.sqrt(3) * size + (Math.abs(col) % 2 === 1 ? Math.sqrt(3) / 2 * size : 0);
+		return { x, z };
+	}
+
+	private pointInPolygon(px: number, pz: number, polygon: Array<{ x: number; z: number }>): boolean {
+		let inside = false;
+		let j = polygon.length - 1;
+		for (let i = 0; i < polygon.length; i++) {
+			if ((polygon[i].z > pz) !== (polygon[j].z > pz) &&
+				px < (polygon[j].x - polygon[i].x) * (pz - polygon[i].z) / (polygon[j].z - polygon[i].z) + polygon[i].x) {
+				inside = !inside;
+			}
+			j = i;
+		}
+		return inside;
+	}
+
+	private getHexContinent(wx: number, wz: number): string | null {
 		for (const [id, def] of Object.entries(CONTINENTS)) {
+			if (this.pointInPolygon(wx, wz, def.outline)) {
+				return id;
+			}
+		}
+		return null;
+	}
+
+	private distToNearestLand(wx: number, wz: number): number {
+		let minDist = Infinity;
+		for (const def of Object.values(CONTINENTS)) {
+			for (const pt of def.outline) {
+				const dx = wx - pt.x;
+				const dz = wz - pt.z;
+				const dist = Math.sqrt(dx * dx + dz * dz);
+				if (dist < minDist) minDist = dist;
+			}
+		}
+		return minDist;
+	}
+
+	private buildHexGrid() {
+		const size = this.HEX_SIZE;
+		const hexShape = this.createHexShape(size * this.HEX_GAP);
+
+		const landGeo = new THREE.ExtrudeGeometry(hexShape, {
+			depth: this.LAND_DEPTH,
+			bevelEnabled: true,
+			bevelThickness: 0.015,
+			bevelSize: 0.015,
+			bevelSegments: 1,
+		});
+		const seaGeo = new THREE.ExtrudeGeometry(hexShape, {
+			depth: this.SEA_DEPTH,
+			bevelEnabled: true,
+			bevelThickness: 0.015,
+			bevelSize: 0.015,
+			bevelSegments: 1,
+		});
+
+		for (const [id, def] of Object.entries(CONTINENTS)) {
+			const mat = new THREE.MeshStandardMaterial({
+				color: def.color,
+				roughness: 0.5,
+				metalness: 0.08,
+			});
+			this.continentMaterials.set(id, mat);
+
 			const group = new THREE.Group();
 			group.userData = { type: 'continent', id };
+			this.continentGroups.set(id, group);
+			this.scene.add(group);
+		}
 
-			const shape = new THREE.Shape();
-			shape.moveTo(def.outline[0].x, -def.outline[0].z);
-			for (let i = 1; i < def.outline.length; i++) {
-				shape.lineTo(def.outline[i].x, -def.outline[i].z);
+		// Dark background visible through hex gaps
+		const bgGeo = new THREE.PlaneGeometry(32, 22);
+		const bgMat = new THREE.MeshStandardMaterial({ color: 0x0a1e30, roughness: 0.95 });
+		const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+		bgMesh.rotation.x = -Math.PI / 2;
+		bgMesh.position.y = -0.02;
+		bgMesh.receiveShadow = true;
+		this.scene.add(bgMesh);
+
+		const seaPositions: Array<{ x: number; z: number }> = [];
+
+		const colMin = -16;
+		const colMax = 16;
+		const rowMin = -10;
+		const rowMax = 10;
+
+		for (let col = colMin; col <= colMax; col++) {
+			for (let row = rowMin; row <= rowMax; row++) {
+				const world = this.hexToWorld(col, row);
+
+				// Elliptical boundary
+				if ((world.x / 11) ** 2 + (world.z / 7.5) ** 2 > 1) continue;
+
+				const continent = this.getHexContinent(world.x, world.z);
+
+				if (continent) {
+					const mat = this.continentMaterials.get(continent)!;
+					const mesh = new THREE.Mesh(landGeo, mat);
+					mesh.rotation.x = -Math.PI / 2;
+					mesh.position.set(world.x, 0, world.z);
+					mesh.castShadow = true;
+					mesh.receiveShadow = true;
+					this.continentGroups.get(continent)!.add(mesh);
+				} else {
+					seaPositions.push(world);
+				}
 			}
-			shape.closePath();
+		}
 
-			const extrudeSettings = { depth: 0.12, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2 };
-			const landGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-			const landMat = new THREE.MeshStandardMaterial({
-				color: def.color,
-				roughness: 0.6,
-				metalness: 0.02,
-				flatShading: false,
+		// Sea hexes (individual meshes, same approach as land tiles for consistent rendering)
+		if (seaPositions.length > 0) {
+			const seaMat = new THREE.MeshStandardMaterial({
+				color: 0x2eb5f6,
+				roughness: 0.5,
+				metalness: 0.08,
 			});
-			const landMesh = new THREE.Mesh(landGeo, landMat);
-			landMesh.rotation.x = -Math.PI / 2;
-			landMesh.position.y = 0;
-			landMesh.castShadow = true;
-			landMesh.receiveShadow = true;
-			group.add(landMesh);
-			this.continentLandMeshes.set(id, landMesh);
 
-			this.addCityProps(group, def);
+			for (const pos of seaPositions) {
+				const mesh = new THREE.Mesh(seaGeo, seaMat);
+				mesh.rotation.x = -Math.PI / 2;
+				mesh.position.set(pos.x, 0, pos.z);
+				mesh.receiveShadow = true;
+				this.scene.add(mesh);
+			}
+		}
 
+		// Labels and city props per continent
+		for (const [id, def] of Object.entries(CONTINENTS)) {
 			const config = CONTINENT_CONFIG[id as keyof typeof CONTINENT_CONFIG];
+			const group = this.continentGroups.get(id)!;
+
 			const labelSprite = this.createLabel(config.name, def.color);
 			labelSprite.position.set(def.center.x, 1.0, def.center.z);
 			group.add(labelSprite);
 			this.labelSprites.set(id, labelSprite);
 
-			this.continentGroups.set(id, group);
-			this.scene.add(group);
+			this.addCityProps(group, def);
 		}
 	}
 
 	private addCityProps(group: THREE.Group, def: ContinentDef) {
 		const cx = def.center.x;
 		const cz = def.center.z;
-		const buildingMat = new THREE.MeshStandardMaterial({ color: 0xEEEEEE, roughness: 0.5 });
+		const buildingMat = new THREE.MeshStandardMaterial({ color: 0xc0d0e0, roughness: 0.45, metalness: 0.1 });
 
 		for (let i = 0; i < 3; i++) {
 			const angle = (i / 3) * Math.PI * 2 + 0.5;
@@ -378,7 +480,7 @@ export class BoardScene {
 
 			const geo = new THREE.BoxGeometry(w, h, w);
 			const building = new THREE.Mesh(geo, buildingMat);
-			building.position.set(bx, 0.12 + h / 2, bz);
+			building.position.set(bx, this.LAND_DEPTH + h / 2, bz);
 			building.castShadow = true;
 			group.add(building);
 		}
@@ -392,22 +494,27 @@ export class BoardScene {
 
 		ctx.clearRect(0, 0, 320, 64);
 
-		ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+		const hexColor = `#${color.toString(16).padStart(6, '0')}`;
+
+		ctx.fillStyle = 'rgba(10, 22, 40, 0.85)';
 		ctx.beginPath();
-		ctx.roundRect(4, 4, 312, 56, 10);
+		ctx.roundRect(4, 4, 312, 56, 28);
 		ctx.fill();
 
-		ctx.strokeStyle = `#${color.toString(16).padStart(6, '0')}`;
-		ctx.lineWidth = 3;
+		ctx.strokeStyle = hexColor;
+		ctx.lineWidth = 2.5;
 		ctx.beginPath();
-		ctx.roundRect(4, 4, 312, 56, 10);
+		ctx.roundRect(4, 4, 312, 56, 28);
 		ctx.stroke();
 
-		ctx.font = 'bold 26px "Segoe UI", system-ui, sans-serif';
+		ctx.shadowColor = hexColor;
+		ctx.shadowBlur = 8;
+		ctx.font = 'bold 24px "Segoe UI", system-ui, sans-serif';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
-		ctx.fillStyle = '#333333';
+		ctx.fillStyle = '#e8edf5';
 		ctx.fillText(text, 160, 34);
+		ctx.shadowBlur = 0;
 
 		const texture = new THREE.CanvasTexture(canvas);
 		texture.needsUpdate = true;
@@ -438,19 +545,19 @@ export class BoardScene {
 			};
 
 			const curve = new THREE.QuadraticBezierCurve3(
-				new THREE.Vector3(ca.x, 0.05, ca.z),
-				new THREE.Vector3(mid.x, 0.05, mid.z),
-				new THREE.Vector3(cb.x, 0.05, cb.z),
+				new THREE.Vector3(ca.x, 0.22, ca.z),
+				new THREE.Vector3(mid.x, 0.22, mid.z),
+				new THREE.Vector3(cb.x, 0.22, cb.z),
 			);
 
 			const points = curve.getPoints(20);
 			const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
 			const lineMat = new THREE.LineDashedMaterial({
-				color: 0xFFFFFF,
+				color: 0x38bdf8,
 				transparent: true,
-				opacity: 0.35,
-				dashSize: 0.2,
-				gapSize: 0.1,
+				opacity: 0.12,
+				dashSize: 0.25,
+				gapSize: 0.12,
 			});
 			const line = new THREE.Line(lineGeo, lineMat);
 			line.computeLineDistances();
@@ -460,7 +567,7 @@ export class BoardScene {
 
 	private createHighlightRing() {
 		const ringGeo = new THREE.RingGeometry(0.9, 1.1, 32);
-		const ringMat = new THREE.MeshBasicMaterial({ color: 0xFFDD44, transparent: true, opacity: 0.7, side: THREE.DoubleSide });
+		const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
 		this.highlightRing = new THREE.Mesh(ringGeo, ringMat);
 		this.highlightRing.rotation.x = -Math.PI / 2;
 		this.highlightRing.visible = false;
@@ -474,24 +581,27 @@ export class BoardScene {
 
 		for (const [id] of this.continentGroups) {
 			const cStatus = player.continents[id as keyof typeof player.continents];
-			const landMesh = this.continentLandMeshes.get(id);
+			const mat = this.continentMaterials.get(id);
 
-			if (landMesh) {
-				const mat = landMesh.material as THREE.MeshStandardMaterial;
+			if (mat) {
 				if (!cStatus.unlocked) {
-					mat.opacity = 0.3;
+					mat.opacity = 0.25;
 					mat.transparent = true;
-					mat.color.setHex(0x888888);
+					mat.color.setHex(0x3a4555);
+					mat.roughness = 0.9;
+					mat.metalness = 0;
 				} else {
 					mat.opacity = 1;
 					mat.transparent = false;
 					mat.color.setHex(CONTINENTS[id].color);
+					mat.roughness = 0.5;
+					mat.metalness = 0.08;
 				}
 			}
 
 			const label = this.labelSprites.get(id);
 			if (label) {
-				label.material.opacity = cStatus.unlocked ? 1.0 : 0.35;
+				label.material.opacity = cStatus.unlocked ? 1.0 : 0.25;
 			}
 		}
 
@@ -511,23 +621,33 @@ export class BoardScene {
 				const angle = ((i + 0.5) / jobs.length) * Math.PI * 2 - Math.PI / 2;
 				const r = 0.7;
 
-				const markerGeo = new THREE.OctahedronGeometry(0.1, 0);
-				const markerMat = new THREE.MeshStandardMaterial({
+				const pinGroup = new THREE.Group();
+				const px = def.center.x + Math.cos(angle) * r;
+				const pz = def.center.z + Math.sin(angle) * r;
+
+				const stickGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 6);
+				const stickMat = new THREE.MeshStandardMaterial({ color: 0xcc5522, roughness: 0.4, metalness: 0.2 });
+				const stick = new THREE.Mesh(stickGeo, stickMat);
+				stick.position.y = 0.38;
+				pinGroup.add(stick);
+
+				const headGeo = new THREE.SphereGeometry(0.1, 12, 12);
+				const headMat = new THREE.MeshStandardMaterial({
 					color: 0xFF6B35,
 					emissive: 0xFF6B35,
-					emissiveIntensity: 0.3,
-					roughness: 0.3,
+					emissiveIntensity: 0.4,
+					roughness: 0.25,
+					metalness: 0.1,
 				});
-				const marker = new THREE.Mesh(markerGeo, markerMat);
-				marker.position.set(
-					def.center.x + Math.cos(angle) * r,
-					0.5,
-					def.center.z + Math.sin(angle) * r
-				);
-				marker.userData = { type: 'job', id: job.id };
-				marker.castShadow = true;
-				this.jobMeshes.set(job.id, marker);
-				this.scene.add(marker);
+				const head = new THREE.Mesh(headGeo, headMat);
+				head.position.y = 0.58;
+				head.castShadow = true;
+				pinGroup.add(head);
+
+				pinGroup.position.set(px, 0, pz);
+				pinGroup.userData = { type: 'job', id: job.id };
+				this.jobMeshes.set(job.id, head);
+				this.scene.add(pinGroup);
 			}
 		}
 
@@ -550,20 +670,20 @@ export class BoardScene {
 		const bodyGeo = new THREE.CapsuleGeometry(0.06, 0.18, 4, 8);
 		const bodyMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.4, metalness: 0.1 });
 		const body = new THREE.Mesh(bodyGeo, bodyMat);
-		body.position.y = 0.35;
+		body.position.y = 0.45;
 		body.castShadow = true;
 		group.add(body);
 
 		const headGeo = new THREE.SphereGeometry(0.06, 8, 8);
 		const headMat = new THREE.MeshStandardMaterial({ color: 0xffd4a3, roughness: 0.6 });
 		const head = new THREE.Mesh(headGeo, headMat);
-		head.position.y = 0.55;
+		head.position.y = 0.65;
 		group.add(head);
 
 		const visorGeo = new THREE.BoxGeometry(0.08, 0.025, 0.02);
 		const visorMat = new THREE.MeshStandardMaterial({ color: 0x44aaff, emissive: 0x44aaff, emissiveIntensity: 0.5 });
 		const visor = new THREE.Mesh(visorGeo, visorMat);
-		visor.position.set(0, 0.55, 0.05);
+		visor.position.set(0, 0.65, 0.05);
 		group.add(visor);
 
 		const offset = (Math.random() - 0.5) * 0.6;
@@ -589,7 +709,6 @@ export class BoardScene {
 			(this.selectedJobCard.material as THREE.SpriteMaterial).dispose();
 			this.selectedJobCard = null;
 		}
-		this.selectedJobData = job;
 		if (!job) return;
 
 		const def = CONTINENTS[job.continent];
@@ -600,33 +719,36 @@ export class BoardScene {
 		canvas.height = 160;
 		const ctx = canvas.getContext('2d')!;
 
-		ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+		ctx.fillStyle = 'rgba(10, 22, 40, 0.92)';
 		ctx.beginPath();
-		ctx.roundRect(4, 4, 392, 152, 12);
+		ctx.roundRect(4, 4, 392, 152, 14);
 		ctx.fill();
 
 		ctx.strokeStyle = '#FF6B35';
-		ctx.lineWidth = 4;
+		ctx.lineWidth = 3;
 		ctx.beginPath();
-		ctx.roundRect(4, 4, 392, 152, 12);
+		ctx.roundRect(4, 4, 392, 152, 14);
 		ctx.stroke();
 
+		ctx.shadowColor = '#FF6B35';
+		ctx.shadowBlur = 6;
 		ctx.font = 'bold 24px "Segoe UI", system-ui, sans-serif';
-		ctx.fillStyle = '#1e293b';
+		ctx.fillStyle = '#e8edf5';
 		ctx.textAlign = 'center';
 		ctx.fillText(job.title, 200, 42, 360);
+		ctx.shadowBlur = 0;
 
 		ctx.font = '18px "Segoe UI", system-ui, sans-serif';
-		ctx.fillStyle = '#64748b';
+		ctx.fillStyle = '#8899b4';
 		ctx.fillText(this.SECTOR_LABELS[job.sector] + ' | ' + CONTINENT_CONFIG[job.continent as keyof typeof CONTINENT_CONFIG].name, 200, 72);
 
 		ctx.font = 'bold 16px "Segoe UI", system-ui, sans-serif';
-		ctx.fillStyle = '#16a34a';
-		ctx.fillText(`💰 ${job.reward}  ⭐ +${job.reputationReward}  ⚠️ ${job.risk}`, 200, 102);
+		ctx.fillStyle = '#34d399';
+		ctx.fillText(`\u{1F4B0} ${job.reward}  \u{2B50} +${job.reputationReward}  \u{26A0}\u{FE0F} ${job.risk}`, 200, 102);
 
 		ctx.font = '16px "Segoe UI", system-ui, sans-serif';
-		ctx.fillStyle = '#3b82f6';
-		ctx.fillText('⬇ Sleep een resource hierheen', 200, 136);
+		ctx.fillStyle = '#38bdf8';
+		ctx.fillText('\u{2B07} Sleep een resource hierheen', 200, 136);
 
 		const texture = new THREE.CanvasTexture(canvas);
 		const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
@@ -671,22 +793,26 @@ export class BoardScene {
 		canvas.height = 48;
 		const ctx = canvas.getContext('2d')!;
 
-		ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+		ctx.fillStyle = 'rgba(10, 22, 40, 0.9)';
 		ctx.beginPath();
-		ctx.roundRect(2, 2, 252, 44, 8);
+		ctx.roundRect(2, 2, 252, 44, 22);
 		ctx.fill();
 
-		ctx.strokeStyle = `#${color.toString(16).padStart(6, '0')}`;
+		const hexColor = `#${color.toString(16).padStart(6, '0')}`;
+		ctx.strokeStyle = hexColor;
 		ctx.lineWidth = 2;
 		ctx.beginPath();
-		ctx.roundRect(2, 2, 252, 44, 8);
+		ctx.roundRect(2, 2, 252, 44, 22);
 		ctx.stroke();
 
+		ctx.shadowColor = hexColor;
+		ctx.shadowBlur = 6;
 		ctx.font = 'bold 20px "Segoe UI", system-ui, sans-serif';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
-		ctx.fillStyle = '#1e293b';
+		ctx.fillStyle = '#e8edf5';
 		ctx.fillText(text, 128, 26, 230);
+		ctx.shadowBlur = 0;
 
 		const texture = new THREE.CanvasTexture(canvas);
 		const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
@@ -795,24 +921,34 @@ export class BoardScene {
 	}
 
 	getJobAtPosition(clientX: number, clientY: number): string | null {
-		if (!this.selectedJobData) return null;
-		const def = CONTINENTS[this.selectedJobData.continent];
-		if (!def) return null;
-
 		const world = this.screenToWorld(clientX, clientY);
 		if (!world) return null;
 
-		const dx = world.x - def.center.x;
-		const dz = world.z - def.center.z;
-		if (dx * dx + dz * dz < 4.0) {
-			return this.selectedJobData.id;
+		let closestJobId: string | null = null;
+		let closestDist = Infinity;
+
+		for (const [jobId, mesh] of this.jobMeshes) {
+			const group = mesh.parent;
+			if (group) {
+				const dx = world.x - group.position.x;
+				const dz = world.z - group.position.z;
+				const dist = dx * dx + dz * dz;
+				if (dist < closestDist) {
+					closestDist = dist;
+					closestJobId = jobId;
+				}
+			}
 		}
+
+		if (closestJobId && closestDist < 2.25) {
+			return closestJobId;
+		}
+
 		return null;
 	}
 
 	highlightContinent(continentId: string | null) {
-		for (const [id, mesh] of this.continentLandMeshes) {
-			const mat = mesh.material as THREE.MeshStandardMaterial;
+		for (const [id, mat] of this.continentMaterials) {
 			if (id === continentId) {
 				mat.emissive.setHex(0xFFFF00);
 				mat.emissiveIntensity = 0.3;
@@ -844,9 +980,16 @@ export class BoardScene {
 		this.assignedCylinders = [];
 
 		for (const [, mesh] of this.jobMeshes) {
-			mesh.parent?.remove(mesh);
-			mesh.geometry.dispose();
-			(mesh.material as THREE.Material).dispose();
+			const group = mesh.parent;
+			if (group) {
+				group.parent?.remove(group);
+				group.traverse((child) => {
+					if (child instanceof THREE.Mesh) {
+						child.geometry.dispose();
+						(child.material as THREE.Material).dispose();
+					}
+				});
+			}
 		}
 		this.jobMeshes.clear();
 
@@ -969,21 +1112,20 @@ export class BoardScene {
 		this.camera.lookAt(0, 0, 0);
 	}
 
-	onZoomChange?: (level: number) => void;
-
 	private onDragOver(event: DragEvent) {
 		event.preventDefault();
 		if (!event.dataTransfer) return;
 		event.dataTransfer.dropEffect = 'move';
 
-		if (this.selectedJobData && this._dragHumanoidName) {
+		if (this._dragHumanoidName) {
 			const nearJob = this.getJobAtPosition(event.clientX, event.clientY);
 			this.highlightJobCard(!!nearJob);
 
 			if (nearJob) {
-				const def = CONTINENTS[this.selectedJobData.continent];
-				if (def) {
-					this.showDragCylinder(this._dragHumanoidName, this._dragHumanoidIsRobot, def.center.x, def.center.z);
+				const jobMesh = this.jobMeshes.get(nearJob);
+				const group = jobMesh?.parent;
+				if (group) {
+					this.showDragCylinder(this._dragHumanoidName, this._dragHumanoidIsRobot, group.position.x, group.position.z);
 				}
 			} else {
 				const world = this.screenToWorld(event.clientX, event.clientY);
@@ -1015,7 +1157,7 @@ export class BoardScene {
 		event.preventDefault();
 		const humanoidId = event.dataTransfer?.getData('text/plain');
 
-		if (this.selectedJobData && humanoidId) {
+		if (humanoidId) {
 			const jobId = this.getJobAtPosition(event.clientX, event.clientY);
 			if (jobId) {
 				this.onJobPlace?.(jobId, humanoidId);
@@ -1050,8 +1192,12 @@ export class BoardScene {
 		this.time += 0.016;
 
 		for (const [, mesh] of this.jobMeshes) {
-			mesh.position.y = 0.5 + Math.sin(this.time * 2.5 + mesh.position.x * 0.5) * 0.08;
-			mesh.rotation.y += 0.02;
+			const group = mesh.parent;
+			if (group) {
+				group.position.y = Math.sin(this.time * 2.5 + group.position.x * 0.5) * 0.06;
+			}
+			const mat = mesh.material as THREE.MeshStandardMaterial;
+			mat.emissiveIntensity = 0.3 + Math.sin(this.time * 3 + mesh.position.x) * 0.15;
 		}
 
 		if (this.highlightRing?.visible) {

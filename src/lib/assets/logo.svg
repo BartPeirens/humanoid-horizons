@@ -3,15 +3,15 @@
   <desc>Hexagonal H logo with teal accent on transparent background.</desc>
   <polygon
     points="256,72 411.9,162 411.9,342 256,432 100.1,342 100.1,162"
-    stroke="#062B60"
+    stroke="#38bdf8"
     stroke-width="18"
     stroke-linejoin="round"
     fill="none"/>
 
   <!-- H mark -->
-  <rect x="180" y="155" width="40" height="182" rx="2" fill="#062B60"/>
-  <path d="M304 155H344V337H304V258H226V220H304V155Z" fill="#062B60"/>
+  <rect x="180" y="155" width="40" height="182" rx="2" fill="#e8edf5"/>
+  <path d="M304 155H344V337H304V258H226V220H304V155Z" fill="#e8edf5"/>
 
   <!-- Teal accent -->
-  <path d="M256 290L280 337L256 319L232 337L256 290Z" fill="#2AAFC3"/>
+  <path d="M256 290L280 337L256 319L232 337L256 290Z" fill="#38bdf8"/>
 </svg>
