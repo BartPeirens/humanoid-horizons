@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 
-	let activeTab = $state<'rules' | 'scoring'>('rules');
+	import { CONTINENT_CONFIG } from '$lib/game/constants';
+	let activeTab = $state<'rules' | 'scoring' | 'regulations'>('rules');
 </script>
 
 <div class="rules-page">
@@ -15,6 +16,7 @@
 		<div class="tabs">
 			<button class="tab" class:active={activeTab === 'rules'} onclick={() => activeTab = 'rules'}>Spelregels</button>
 			<button class="tab" class:active={activeTab === 'scoring'} onclick={() => activeTab = 'scoring'}>Scoresysteem</button>
+			<button class="tab" class:active={activeTab === 'regulations'} onclick={() => activeTab = 'regulations'}>Wetgeving</button>
 		</div>
 
 		{#if activeTab === 'rules'}
@@ -397,7 +399,7 @@
 			</p>
 		</section>
 
-		{:else}
+		{:else if activeTab === 'scoring'}
 
 		<!-- SCORESYSTEEM TAB -->
 		<section>
@@ -761,6 +763,103 @@
 						<li>Zet <strong>alle humanoids regelmatig in</strong> — idle straf begint na 2 beurten (Complexiteit)</li>
 						<li>Spaar cash — <strong>200+ cash</strong> geeft maximale Winstpunten</li>
 					</ul>
+				</div>
+			</div>
+		</section>
+
+		{:else}
+
+		<!-- WETGEVING TAB -->
+		<section>
+			<div class="disclaimer-box">
+				<strong>Let op:</strong> Alle wetgeving in dit spel is volledig fictief en dient enkel als spelcontext. De genoemde wetten, instanties en afkortingen bestaan niet in de echte wereld.
+			</div>
+		</section>
+
+		<section>
+			<h2>Compliance in het spel</h2>
+			<p>
+				Elk continent heeft eigen regelgeving voor de inzet van humanoids. Als uitzendbureau moet je voldoen aan de lokale compliance-eisen.
+				Hoe strenger het continent, hoe hoger de basis compliance-score — en hoe meer impact het heeft op je opdrachten.
+			</p>
+			<div class="regulation-how-it-works">
+				<h3>Hoe werkt compliance?</h3>
+				<ul>
+					<li>Elke opdracht heeft een <strong>compliance-eis</strong> (gebaseerd op het continent)</li>
+					<li>Jouw <strong>compliance-score</strong> per continent wordt vergeleken met die eis</li>
+					<li>Het verschil × 0.1 wordt als <strong>bonus of straf</strong> bij je opdrachtscore opgeteld</li>
+					<li>Bij een <strong>mislukte opdracht</strong> in een streng continent is er 30% kans op een <strong>compliance-fout</strong></li>
+					<li>Bij <strong>3 compliance-fouten</strong> in één continent verlies je het spel!</li>
+				</ul>
+			</div>
+		</section>
+
+		<section>
+			<h2>Compliance verhogen</h2>
+			<p>Er is één manier om je compliance te verhogen:</p>
+			<div class="regulation-action-card card">
+				<h3>Compliance Check</h3>
+				<div class="regulation-action-details">
+					<span class="regulation-cost">Kost: 1 actiepunt + 10 cash</span>
+					<span class="regulation-effect">Effect: +15 compliance in het gekozen continent (max 100)</span>
+				</div>
+				<p>Kies het continent waar je je compliance wilt verbeteren. Dit is vooral belangrijk in continenten met strenge regelgeving (Europa, Oceanië) of waar je veel opdrachten uitvoert.</p>
+			</div>
+			<div class="regulation-warning card">
+				<h3>Compliance kan ook dalen!</h3>
+				<ul>
+					<li><strong>Markt-events</strong> zoals "Nieuwe regelgeving" kunnen je compliance verlagen</li>
+					<li>Houd je score in de gaten via de kaart-legenda en de job cards</li>
+				</ul>
+			</div>
+		</section>
+
+		<section>
+			<h2>Wetgeving per continent</h2>
+			<div class="regulation-grid">
+				{#each Object.entries(CONTINENT_CONFIG) as [id, config]}
+					<div class="regulation-card card">
+						<h3 style="color: var(--color-primary)">{config.name}</h3>
+						<div class="regulation-meta">
+							<span class="regulation-badge">Basis compliance: {config.baseCompliance}</span>
+							<span class="regulation-strictness">
+								{#if config.baseCompliance >= 70}
+									Streng
+								{:else if config.baseCompliance >= 50}
+									Gemiddeld
+								{:else}
+									Soepel
+								{/if}
+							</span>
+						</div>
+						<p class="regulation-description">{config.description}</p>
+						<div class="regulation-law">
+							<p>{config.regulation}</p>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</section>
+
+		<section>
+			<h2>Voorbeeld: compliance-impact op score</h2>
+			<div class="regulation-example card">
+				<div class="example-scenario">
+					<h3>Situatie 1: Goede compliance</h3>
+					<p>Je voert een opdracht uit in <strong>Europa</strong> (compliance-eis: 64). Jouw compliance in Europa is <strong>80</strong>.</p>
+					<div class="example-calc">
+						<div>Verschil: 80 − 64 = <strong>+16</strong></div>
+						<div>Score-impact: 16 × 0.1 = <strong>+1.6 → afgerond +2 bonus</strong></div>
+					</div>
+				</div>
+				<div class="example-scenario">
+					<h3>Situatie 2: Lage compliance</h3>
+					<p>Je voert een opdracht uit in <strong>Europa</strong> (compliance-eis: 64). Jouw compliance is gedaald naar <strong>40</strong> door een markt-event.</p>
+					<div class="example-calc">
+						<div>Verschil: 40 − 64 = <strong>-24</strong></div>
+						<div>Score-impact: -24 × 0.1 = <strong>-2.4 → afgerond -2 straf</strong></div>
+						<div class="calc-total calc-fail">Oplossing: doe een Compliance Check (+15) → compliance wordt 55, verschil daalt naar -9 → straf -1</div>
+					</div>
 				</div>
 			</div>
 		</section>
@@ -1165,10 +1264,139 @@
 		line-height: 1.8;
 	}
 
+	.disclaimer-box {
+		background: rgba(251, 191, 36, 0.12);
+		border: 1px solid rgba(251, 191, 36, 0.3);
+		border-left: 4px solid var(--color-warning);
+		border-radius: 6px;
+		padding: 0.75rem 1rem;
+		font-size: 0.9rem;
+		color: var(--color-text-light);
+		line-height: 1.6;
+	}
+
+	.regulation-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: 1rem;
+		margin-top: 0.75rem;
+	}
+
+	.regulation-card {
+		padding: 1rem;
+	}
+
+	.regulation-meta {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		margin-bottom: 0.5rem;
+	}
+
+	.regulation-badge {
+		font-size: 0.78rem;
+		font-weight: 600;
+		background: rgba(99, 102, 241, 0.15);
+		color: var(--color-primary);
+		padding: 0.15rem 0.5rem;
+		border-radius: 4px;
+	}
+
+	.regulation-strictness {
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 0.15rem 0.5rem;
+		border-radius: 4px;
+		background: rgba(255, 255, 255, 0.05);
+		color: var(--color-text-muted);
+	}
+
+	.regulation-description {
+		font-size: 0.85rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.regulation-law {
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 4px;
+		padding: 0.5rem 0.75rem;
+		font-style: italic;
+		border-left: 2px solid var(--color-primary);
+	}
+
+	.regulation-law p {
+		font-size: 0.8rem;
+		margin-bottom: 0;
+		line-height: 1.5;
+	}
+
+	.regulation-how-it-works {
+		background: rgba(99, 102, 241, 0.08);
+		border: 1px solid rgba(99, 102, 241, 0.2);
+		border-radius: 8px;
+		padding: 1rem;
+		margin-top: 0.75rem;
+	}
+
+	.regulation-how-it-works h3 {
+		margin-bottom: 0.5rem;
+	}
+
+	.regulation-how-it-works ul {
+		font-size: 0.88rem;
+	}
+
+	.regulation-action-card {
+		padding: 1rem;
+		border-left: 3px solid var(--color-success);
+	}
+
+	.regulation-action-details {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		margin: 0.5rem 0;
+		font-size: 0.85rem;
+	}
+
+	.regulation-cost {
+		color: var(--color-warning);
+		font-weight: 600;
+	}
+
+	.regulation-effect {
+		color: var(--color-success);
+		font-weight: 600;
+	}
+
+	.regulation-warning {
+		margin-top: 0.75rem;
+		padding: 1rem;
+		border-left: 3px solid var(--color-warning);
+	}
+
+	.regulation-warning ul {
+		font-size: 0.85rem;
+		margin-top: 0.5rem;
+	}
+
+	.regulation-example {
+		padding: 1rem;
+	}
+
+	.example-scenario {
+		margin-bottom: 1rem;
+	}
+
+	.example-scenario:last-child {
+		margin-bottom: 0;
+	}
+
 	@media (max-width: 600px) {
 		.tips-grid,
 		.win-lose-grid,
-		.outcome-grid {
+		.outcome-grid,
+		.regulation-grid {
 			grid-template-columns: 1fr;
 		}
 	}

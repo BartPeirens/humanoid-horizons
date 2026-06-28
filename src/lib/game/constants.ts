@@ -25,13 +25,13 @@ export const ACTION_COSTS = {
 	BUY_ACTION_POINT: { actionPoints: 0 },
 } as const;
 
-export const CONTINENT_CONFIG: Record<Continent, { name: string; baseCompliance: number; description: string }> = {
-	'europe': { name: 'Europa', baseCompliance: 80, description: 'Streng, hoge compliance-kost, hoge reputatiewinst' },
-	'north-america': { name: 'Noord-Amerika', baseCompliance: 60, description: 'Commercieel snel, middelmatige compliance' },
-	'south-america': { name: 'Zuid-Amerika', baseCompliance: 40, description: 'Prijsgevoelig, logistieke uitdagingen' },
-	'asia': { name: 'Azië', baseCompliance: 50, description: 'Sterke productie, snellere beschikbaarheid' },
-	'africa': { name: 'Afrika', baseCompliance: 30, description: 'Groeiende markt, beperkte infrastructuur' },
-	'oceania': { name: 'Oceanië', baseCompliance: 55, description: 'Nichemarkt, hoge operationele kosten' },
+export const CONTINENT_CONFIG: Record<Continent, { name: string; baseCompliance: number; description: string; regulation: string }> = {
+	'europe': { name: 'Europa', baseCompliance: 80, description: 'Streng, hoge compliance-kost, hoge reputatiewinst', regulation: 'EU Humanoid Framework Directive (EHFD) — Vereist volledige veiligheidscertificering, ethische AI-audit en kwartaalrapportages voor elke ingezette humanoid.' },
+	'north-america': { name: 'Noord-Amerika', baseCompliance: 60, description: 'Commercieel snel, middelmatige compliance', regulation: 'North American Robotics Safety Act (NARSA) — Federale basisnormen voor veiligheid en aansprakelijkheid, maar staten mogen eigen regels toevoegen.' },
+	'south-america': { name: 'Zuid-Amerika', baseCompliance: 40, description: 'Prijsgevoelig, logistieke uitdagingen', regulation: 'Protocolo Mercosur de Trabajo Autónomo (PMTA) — Minimale registratieplicht en jaarlijkse inspectie, focus op arbeidsverdringing.' },
+	'asia': { name: 'Azië', baseCompliance: 50, description: 'Sterke productie, snellere beschikbaarheid', regulation: 'Pan-Asian Automation Standards (PAAS) — Productiecertificering en verplichte data-lokalisatie, variërend per land.' },
+	'africa': { name: 'Afrika', baseCompliance: 30, description: 'Groeiende markt, beperkte infrastructuur', regulation: 'African Union Digital Workforce Charter (AUDWC) — Basisregistratie en importvergunning, beperkte handhaving.' },
+	'oceania': { name: 'Oceanië', baseCompliance: 55, description: 'Nichemarkt, hoge operationele kosten', regulation: 'Trans-Tasman Autonomous Worker Code (TTAWC) — Strenge milieu- en veiligheidseisen voor afgelegen inzet, verplichte noodprotocollen.' },
 };
 
 export const SECTOR_TYPE_BONUS: Record<Sector, { preferred: WorkerType; bonus: number; label: string }> = {

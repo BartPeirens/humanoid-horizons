@@ -497,6 +497,8 @@
 						{@const bestHumanoid = getBestHumanoidForJob(job)}
 						{@const pendingHumanoidId = pendingAssignments.get(job.id) ?? null}
 						{@const pendingH = pendingHumanoidId ? player?.humanoids.find(h => h.id === pendingHumanoidId) ?? null : null}
+						{@const playerCompliance = player?.continents[job.continent]?.complianceScore ?? 0}
+						{@const complianceDiff = playerCompliance - job.complianceLevel}
 						<button
 							class="job-item"
 							class:selected={isSelected}
@@ -537,6 +539,10 @@
 								<Tooltip position="right">
 									{#snippet children()}<span class="job-stat-item">&#x1F3AF; {job.requiredSkill}</span>{/snippet}
 									{#snippet content()}<span class="tt-label">Vereiste skill</span>Minimale sector-skill voor een goede score. Jouw humanoid moet minstens <strong>{job.requiredSkill}</strong> {SECTOR_LABELS[job.sector]}-skill hebben{/snippet}
+								</Tooltip>
+								<Tooltip position="right">
+									{#snippet children()}<span class="job-stat-item" class:compliance-ok={complianceDiff >= 0} class:compliance-low={complianceDiff < 0}>&#x1F4CB; {job.complianceLevel}</span>{/snippet}
+									{#snippet content()}<span class="tt-label">Compliance-eis</span>Deze opdracht vereist compliance <strong>{job.complianceLevel}</strong>. Jouw score in {CONTINENT_CONFIG[job.continent].name}: <strong>{playerCompliance}</strong> ({complianceDiff >= 0 ? `+${Math.round(complianceDiff * 0.1)} bonus` : `${Math.round(complianceDiff * 0.1)} straf`}).{#if complianceDiff < 0} Doe een <strong>Compliance Check</strong> (+15) om dit te verbeteren.{/if}<br><br><em>{CONTINENT_CONFIG[job.continent].regulation}</em>{/snippet}
 								</Tooltip>
 							</div>
 
@@ -604,15 +610,24 @@
 					<div class="legend-title">Continenten</div>
 					{#each Object.entries(CONTINENT_CONFIG) as [id, config]}
 						{@const unlocked = player?.continents[id as Continent]?.unlocked}
-						<div class="legend-item" class:legend-locked={!unlocked}>
-							<span class="legend-color" style="background: {CONTINENT_COLORS[id]}"></span>
-							<span class="legend-name">{config.name}</span>
-							{#if !unlocked}
-								<span class="legend-lock">&#x1F512;</span>
-							{:else}
-								<span class="legend-check">&#x2705;</span>
-							{/if}
-						</div>
+						{@const cStatus = player?.continents[id as Continent]}
+						<Tooltip position="right">
+							{#snippet children()}
+							<div class="legend-item" class:legend-locked={!unlocked}>
+								<span class="legend-color" style="background: {CONTINENT_COLORS[id]}"></span>
+								<span class="legend-name">{config.name}</span>
+								{#if !unlocked}
+									<span class="legend-lock">&#x1F512;</span>
+								{:else}
+									<span class="legend-compliance" class:compliance-ok={cStatus && cStatus.complianceScore >= config.baseCompliance} class:compliance-low={cStatus && cStatus.complianceScore < config.baseCompliance}>&#x1F4CB; {cStatus?.complianceScore ?? 0}</span>
+									{#if cStatus && cStatus.complianceFailures > 0}
+										<span class="legend-failures">&#x26A0;&#xFE0F; {cStatus.complianceFailures}/3</span>
+									{/if}
+								{/if}
+							</div>
+							{/snippet}
+							{#snippet content()}<span class="tt-label">{config.name} — Regelgeving</span>{config.regulation}{#if unlocked && cStatus}<br><br>Jouw compliance: <strong>{cStatus.complianceScore}</strong> / basis {config.baseCompliance}{#if cStatus.complianceFailures > 0}<br><span class="tt-negative">Fouten: {cStatus.complianceFailures}/3 — bij 3 verlies je!</span>{/if}{/if}{/snippet}
+						</Tooltip>
 					{/each}
 					<div class="legend-divider"></div>
 					<div class="legend-item">
@@ -630,6 +645,7 @@
 						{@const expanded = isPlayerExpanded(p.id, isActive)}
 						{@const impact = calculatePlayerImpactScore(p, state.round)}
 						{@const maintenancePerRound = p.humanoids.reduce((s, h) => s + h.card.maintenanceCost, 0)}
+						{@const totalFailures = Object.values(p.continents).reduce((sum, c) => sum + c.complianceFailures, 0)}
 						<div class="player-card card" class:active={isActive} style="border-left: 4px solid {p.color}">
 							<button class="player-header" onclick={() => togglePlayerExpand(p.id)}>
 								<div class="player-name">{p.name}</div>
@@ -651,6 +667,12 @@
 								<Tooltip text="Succesvolle opdrachten — je hebt 6 nodig om te winnen" position="bottom">
 									{#snippet children()}<span class="player-stat-item">&#x2705; {p.successfulJobs}</span>{/snippet}
 								</Tooltip>
+								{#if totalFailures > 0}
+									<Tooltip position="bottom">
+										{#snippet children()}<span class="player-stat-item compliance-failures-stat">&#x1F4CB; {totalFailures}</span>{/snippet}
+										{#snippet content()}<span class="tt-label">Compliance-fouten</span>{#each Object.entries(p.continents) as [cId, cSt]}{#if cSt.complianceFailures > 0}{CONTINENT_CONFIG[cId as Continent].name}: <strong class={cSt.complianceFailures >= 2 ? 'tt-negative' : ''}>{cSt.complianceFailures}/3</strong>{#if cSt.complianceFailures >= 2} — gevaar!{/if}<br>{/if}{/each}Bij 3 fouten in één continent verlies je het spel!{/snippet}
+									</Tooltip>
+								{/if}
 							</div>
 
 							{#if expanded}
@@ -1206,8 +1228,16 @@
 								disabled={player?.continents[id as Continent].unlocked}>
 								<div class="shop-name" style="color: {CONTINENT_COLORS[id]}">{config.name}</div>
 								<div class="shop-desc">{config.description}</div>
+								<div class="shop-regulation">{config.regulation}</div>
 								{#if player?.continents[id as Continent].unlocked}
+									{@const cs = player.continents[id as Continent]}
 									<span class="badge badge-success">Ontgrendeld</span>
+									<div class="shop-compliance-info">
+										<span class="shop-compliance-score" class:compliance-ok={cs.complianceScore >= config.baseCompliance} class:compliance-low={cs.complianceScore < config.baseCompliance}>&#x1F4CB; Score: {cs.complianceScore} / {config.baseCompliance}</span>
+										{#if cs.complianceFailures > 0}
+											<span class="shop-compliance-failures" class:compliance-danger={cs.complianceFailures >= 2}>&#x26A0;&#xFE0F; Fouten: {cs.complianceFailures}/3</span>
+										{/if}
+									</div>
 								{:else}
 									<Tooltip position="top">
 										{#snippet children()}<span class="shop-cost">&#x1F4B0; 25 cash</span>{/snippet}
@@ -2072,8 +2102,24 @@
 		color: var(--color-text-light);
 	}
 
+	.map-legend :global(.tooltip-wrapper) {
+		display: flex;
+		width: 100%;
+	}
+
 	.legend-lock, .legend-check {
 		font-size: 0.62rem;
+	}
+
+	.legend-compliance {
+		font-size: 0.62rem;
+		font-weight: 600;
+		margin-left: auto;
+	}
+
+	.legend-failures {
+		font-size: 0.58rem;
+		margin-left: 0.2rem;
 	}
 
 	.legend-divider {
@@ -2672,6 +2718,40 @@
 		font-size: 0.78rem;
 		color: var(--color-text-muted);
 		margin-bottom: 0.25rem;
+	}
+
+	.shop-regulation {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+		font-style: italic;
+		margin-bottom: 0.35rem;
+		line-height: 1.3;
+	}
+
+	.shop-compliance-info {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		margin-top: 0.3rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.shop-compliance-failures.compliance-danger {
+		color: var(--color-error);
+		animation: pulse 1.5s infinite;
+	}
+
+	.compliance-ok {
+		color: var(--color-success);
+	}
+
+	.compliance-low {
+		color: var(--color-warning);
+	}
+
+	.compliance-failures-stat {
+		color: var(--color-warning);
 	}
 
 	.event-card {
