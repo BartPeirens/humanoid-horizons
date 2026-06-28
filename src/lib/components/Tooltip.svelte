@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { onDestroy } from 'svelte';
 
 	let {
 		text = '',
@@ -14,9 +15,19 @@
 	} = $props();
 
 	let visible = $state(false);
-	let tooltipEl: HTMLElement;
 	let wrapperEl: HTMLElement;
 	let coords = $state({ x: 0, y: 0 });
+
+	function portal(node: HTMLElement) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				if (node.parentNode) {
+					node.parentNode.removeChild(node);
+				}
+			}
+		};
+	}
 
 	function show() {
 		visible = true;
@@ -58,25 +69,25 @@
 	onblur={hide}
 >
 	{@render children()}
-
-	{#if visible && (text || content)}
-		<div
-			class="tooltip tooltip-{position}"
-			bind:this={tooltipEl}
-			style="left: {coords.x}px; top: {coords.y}px;"
-			role="tooltip"
-		>
-			<div class="tooltip-inner">
-				{#if content}
-					{@render content()}
-				{:else}
-					{text}
-				{/if}
-			</div>
-			<div class="tooltip-arrow"></div>
-		</div>
-	{/if}
 </span>
+
+{#if visible && (text || content)}
+	<div
+		class="tooltip tooltip-{position}"
+		style="left: {coords.x}px; top: {coords.y}px;"
+		role="tooltip"
+		use:portal
+	>
+		<div class="tooltip-inner">
+			{#if content}
+				{@render content()}
+			{:else}
+				{text}
+			{/if}
+		</div>
+		<div class="tooltip-arrow"></div>
+	</div>
+{/if}
 
 <style>
 	.tooltip-wrapper {
@@ -84,7 +95,7 @@
 		position: relative;
 	}
 
-	.tooltip {
+	:global(.tooltip) {
 		position: fixed;
 		z-index: 99999;
 		pointer-events: none;
@@ -96,7 +107,7 @@
 		to { opacity: 1; transform: scale(1) translateY(0); }
 	}
 
-	.tooltip-inner {
+	:global(.tooltip-inner) {
 		background: linear-gradient(135deg, #0f1d32, #142140);
 		color: #d4dce8;
 		padding: 0.6rem 0.85rem;
@@ -109,12 +120,12 @@
 		word-wrap: break-word;
 	}
 
-	.tooltip-inner :global(strong) {
+	:global(.tooltip-inner strong) {
 		color: #fbbf24;
 		font-weight: 700;
 	}
 
-	.tooltip-inner :global(.tt-label) {
+	:global(.tooltip-inner .tt-label) {
 		color: #38bdf8;
 		font-size: 0.62rem;
 		text-transform: uppercase;
@@ -124,33 +135,33 @@
 		margin-bottom: 0.2rem;
 	}
 
-	.tooltip-inner :global(.tt-value) {
+	:global(.tooltip-inner .tt-value) {
 		color: #e2e8f0;
 		font-weight: 600;
 	}
 
-	.tooltip-inner :global(.tt-positive) {
+	:global(.tooltip-inner .tt-positive) {
 		color: #34d399;
 	}
 
-	.tooltip-inner :global(.tt-negative) {
+	:global(.tooltip-inner .tt-negative) {
 		color: #f87171;
 	}
 
-	.tooltip-inner :global(.tt-divider) {
+	:global(.tooltip-inner .tt-divider) {
 		height: 1px;
 		background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.15), transparent);
 		margin: 0.4rem 0;
 	}
 
-	.tooltip-inner :global(.tt-row) {
+	:global(.tooltip-inner .tt-row) {
 		display: flex;
 		justify-content: space-between;
 		gap: 0.75rem;
 		padding: 0.12rem 0;
 	}
 
-	.tooltip-arrow {
+	:global(.tooltip-arrow) {
 		position: absolute;
 		width: 8px;
 		height: 8px;
@@ -159,10 +170,10 @@
 		border: 1px solid rgba(56, 189, 248, 0.1);
 	}
 
-	.tooltip-top {
+	:global(.tooltip-top) {
 		transform: translate(-50%, -100%);
 	}
-	.tooltip-top .tooltip-arrow {
+	:global(.tooltip-top .tooltip-arrow) {
 		bottom: -4px;
 		left: 50%;
 		margin-left: -4px;
@@ -170,10 +181,10 @@
 		border-left: none;
 	}
 
-	.tooltip-bottom {
+	:global(.tooltip-bottom) {
 		transform: translate(-50%, 0);
 	}
-	.tooltip-bottom .tooltip-arrow {
+	:global(.tooltip-bottom .tooltip-arrow) {
 		top: -4px;
 		left: 50%;
 		margin-left: -4px;
@@ -181,10 +192,10 @@
 		border-right: none;
 	}
 
-	.tooltip-left {
+	:global(.tooltip-left) {
 		transform: translate(-100%, -50%);
 	}
-	.tooltip-left .tooltip-arrow {
+	:global(.tooltip-left .tooltip-arrow) {
 		right: -4px;
 		top: 50%;
 		margin-top: -4px;
@@ -192,10 +203,10 @@
 		border-left: none;
 	}
 
-	.tooltip-right {
+	:global(.tooltip-right) {
 		transform: translate(0, -50%);
 	}
-	.tooltip-right .tooltip-arrow {
+	:global(.tooltip-right .tooltip-arrow) {
 		left: -4px;
 		top: 50%;
 		margin-top: -4px;

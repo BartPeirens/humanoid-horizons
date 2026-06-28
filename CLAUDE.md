@@ -65,6 +65,10 @@ SvelteKit pages using Svelte 5 runes (`$state`, `$derived`, `$effect`).
 - No database — all state is in-memory via Svelte stores
 - No authentication — local multiplayer only
 
+## UI Rules
+
+- Every number shown in the UI must have a Tooltip explaining what it means. Use the `Tooltip` component from `$lib/components/Tooltip.svelte`. No bare numbers without context.
+
 ## Docker
 
 Service name: `humanoid-horizons-claude`. Multi-stage build: node:22-slim builder + slim runner. Exposes port 3000.

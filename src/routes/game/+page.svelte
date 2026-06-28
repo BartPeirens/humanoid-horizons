@@ -611,23 +611,31 @@
 					{#each Object.entries(CONTINENT_CONFIG) as [id, config]}
 						{@const unlocked = player?.continents[id as Continent]?.unlocked}
 						{@const cStatus = player?.continents[id as Continent]}
-						<Tooltip position="right">
-							{#snippet children()}
-							<div class="legend-item" class:legend-locked={!unlocked}>
-								<span class="legend-color" style="background: {CONTINENT_COLORS[id]}"></span>
-								<span class="legend-name">{config.name}</span>
-								{#if !unlocked}
-									<span class="legend-lock">&#x1F512;</span>
-								{:else}
-									<span class="legend-compliance" class:compliance-ok={cStatus && cStatus.complianceScore >= config.baseCompliance} class:compliance-low={cStatus && cStatus.complianceScore < config.baseCompliance}>&#x1F4CB; {cStatus?.complianceScore ?? 0}</span>
-									{#if cStatus && cStatus.complianceFailures > 0}
-										<span class="legend-failures">&#x26A0;&#xFE0F; {cStatus.complianceFailures}/3</span>
-									{/if}
+						<div class="legend-item" class:legend-locked={!unlocked}>
+							<Tooltip position="right">
+								{#snippet children()}
+								<span class="legend-name-group">
+									<span class="legend-color" style="background: {CONTINENT_COLORS[id]}"></span>
+									<span class="legend-name">{config.name}</span>
+								</span>
+								{/snippet}
+								{#snippet content()}<span class="tt-label">{config.name} — Regelgeving</span>{config.regulation}{/snippet}
+							</Tooltip>
+							{#if !unlocked}
+								<span class="legend-lock">&#x1F512;</span>
+							{:else if cStatus}
+								<Tooltip position="right">
+									{#snippet children()}<span class="legend-compliance" class:compliance-ok={cStatus.complianceScore >= config.baseCompliance} class:compliance-low={cStatus.complianceScore < config.baseCompliance}>&#x1F4CB; {cStatus.complianceScore}</span>{/snippet}
+									{#snippet content()}<span class="tt-label">Compliance-score</span>Jouw compliance in <strong>{config.name}</strong>: <strong>{cStatus.complianceScore}</strong> / basis {config.baseCompliance}.{#if cStatus.complianceScore >= config.baseCompliance}<br><span class="tt-positive">Je voldoet aan de basisnorm — bonus op opdrachten hier.</span>{:else}<br><span class="tt-negative">Onder de basisnorm — doe een Compliance Check (+15) om dit te verbeteren.</span>{/if}{/snippet}
+								</Tooltip>
+								{#if cStatus.complianceFailures > 0}
+									<Tooltip position="right">
+										{#snippet children()}<span class="legend-failures" class:compliance-danger={cStatus.complianceFailures >= 2}>&#x26A0;&#xFE0F; {cStatus.complianceFailures}/3</span>{/snippet}
+										{#snippet content()}<span class="tt-label">Compliance-fouten</span>Aantal fouten in <strong>{config.name}</strong>: <strong>{cStatus.complianceFailures}</strong> van maximaal 3.<br>{#if cStatus.complianceFailures >= 2}<span class="tt-negative">Gevaar! Nog 1 fout en je verliest het spel!</span>{:else}Bij 3 fouten in één continent verlies je het spel.{/if}{/snippet}
+									</Tooltip>
 								{/if}
-							</div>
-							{/snippet}
-							{#snippet content()}<span class="tt-label">{config.name} — Regelgeving</span>{config.regulation}{#if unlocked && cStatus}<br><br>Jouw compliance: <strong>{cStatus.complianceScore}</strong> / basis {config.baseCompliance}{#if cStatus.complianceFailures > 0}<br><span class="tt-negative">Fouten: {cStatus.complianceFailures}/3 — bij 3 verlies je!</span>{/if}{/if}{/snippet}
-						</Tooltip>
+							{/if}
+						</div>
 					{/each}
 					<div class="legend-divider"></div>
 					<div class="legend-item">
@@ -2056,7 +2064,7 @@
 		position: absolute;
 		bottom: 12px;
 		left: 12px;
-		background: rgba(15, 29, 50, 0.92);
+		background: rgba(15, 29, 50, 0.97);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
 		padding: 0.6rem 0.85rem;
@@ -2064,8 +2072,6 @@
 		box-shadow: var(--shadow);
 		pointer-events: auto;
 		z-index: 5;
-		-webkit-backdrop-filter: blur(12px);
-		backdrop-filter: blur(12px);
 	}
 
 	.legend-title {
@@ -2102,9 +2108,12 @@
 		color: var(--color-text-light);
 	}
 
-	.map-legend :global(.tooltip-wrapper) {
+	.legend-name-group {
 		display: flex;
-		width: 100%;
+		align-items: center;
+		gap: 0.4rem;
+		flex: 1;
+		cursor: help;
 	}
 
 	.legend-lock, .legend-check {
@@ -2115,11 +2124,13 @@
 		font-size: 0.62rem;
 		font-weight: 600;
 		margin-left: auto;
+		cursor: help;
 	}
 
 	.legend-failures {
 		font-size: 0.58rem;
 		margin-left: 0.2rem;
+		cursor: help;
 	}
 
 	.legend-divider {
